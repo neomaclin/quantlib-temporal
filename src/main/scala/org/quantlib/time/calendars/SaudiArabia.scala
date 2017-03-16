@@ -14,6 +14,6 @@ object SaudiArabia {
   }
 }
 
-final case class SaudiArabia(market: Market = Tadawul) extends BusinessCalendar with WeekendFriSat{
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = ???
+final case class SaudiArabia[D: DateOps](market: Market = Tadawul) extends WeekendFriSat[D] with BusinessCalendar[D]{
+  override def considerBusinessDay(date: D): Boolean = ???
 }

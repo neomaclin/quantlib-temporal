@@ -63,18 +63,15 @@ final case class Thirty360[D: DateOps](c: Convention = BondBasis) extends DayCou
     360 * (yy2 - yy1) + 30 * (mm2 - mm1 - 1) + Math.max(0, 30 - dd1) + Math.min(30, dd2)
   }
 
-  private val dayCountImpl: (D, D) => Long = c match {
-    case USA | BondBasis => dayCountUS
-    case European | EurobondBasis => dayCountEU
-    case Italian => dayCountIT
+  def dayCount(date1: D, date2: D): Int =  c match {
+    case USA | BondBasis => dayCountUS(date1,date2)
+    case European | EurobondBasis => dayCountEU(date1,date2)
+    case Italian => dayCountIT(date1,date2)
   }
-
-  def dayCount(date1: D, date2: D): Long = dayCountImpl(date1, date2)
-
 
   def yearFraction(date1: D, date2: D,
                    refDate1: Option[D] = None,
-                   refDate2: Option[D] = None): Double = dayCountImpl(date1, date2) / 360.0
+                   refDate2: Option[D] = None): Double = dayCount(date1, date2) / 360.0
 
   override val toString: String = c match {
     case USA | BondBasis => "30/360 (Bond Basis)"

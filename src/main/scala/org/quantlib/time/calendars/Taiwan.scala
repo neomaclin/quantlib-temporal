@@ -14,6 +14,6 @@ object Taiwan {
   }
 }
 
-final  case class Taiwan(market: Market = TSEC) extends BusinessCalendar with WeekendSatSun{
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = ???
+final  case class Taiwan[D: DateOps](market: Market = TSEC) extends WeekendSatSun[D] with BusinessCalendar[D]{
+  override def considerBusinessDay(date: D): Boolean = ???
 }

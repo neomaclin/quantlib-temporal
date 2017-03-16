@@ -15,6 +15,6 @@ object Russia{
   }
 }
 
-case class Russia(market: Market = Settlement) extends BusinessCalendar with WeekendSatSun{
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = ???
+case class Russia[D: DateOps](market: Market = Settlement) extends WeekendSatSun[D] with BusinessCalendar[D]{
+  override def considerBusinessDay(date: D): Boolean = ???
 }

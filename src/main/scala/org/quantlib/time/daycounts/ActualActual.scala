@@ -7,7 +7,6 @@ import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 import org.quantlib.time.daycounts.ActualActual.Convention
 import org.quantlib.time.daycounts.ActualActual.Convention._
-import org.quantlib.time.enums.TimeUnit
 import org.quantlib.time.enums.TimeUnit._
 
 import scala.annotation.tailrec
@@ -29,33 +28,42 @@ import scala.annotation.tailrec
 */
 
 
-object ActualActual{
+object ActualActual {
 
   sealed trait Convention
 
-  object Convention{
+  object Convention {
+
     case object ISMA extends Convention
+
     case object Bond extends Convention
+
     case object ISDA extends Convention
+
     case object Historical extends Convention
+
     case object Actual365 extends Convention
+
     case object AFB extends Convention
+
     case object Euro extends Convention
+
   }
+
 }
 
 
-final case class ActualActual[D: DateOps](convention: Convention = ISDA) extends DayCountBasis[D]{
+final case class ActualActual[D: DateOps](convention: Convention = ISDA) extends DayCountBasis[D] {
 
-  def dayCount(date1: D, date2: D): Long = if (date2 >= date1) 1 else -1
+  def dayCount(date1: D, date2: D): Int = date1.to(date2, Days).toInt
 
   private def yearFractionISMA(date1: D, date2: D,
                                refDate1: Option[D],
-                               refDate2: Option[D]): Double  = {
+                               refDate2: Option[D]): Double = {
     if (date1 == date2) {
       0.0
     } else if (date1 > date2) {
-      -yearFractionISMA(date2,date1,refDate1,refDate2)
+      -yearFractionISMA(date2, date1, refDate1, refDate2)
     }
     else {
       val refPeriodStart = refDate1 getOrElse date1
@@ -65,54 +73,36 @@ final case class ActualActual[D: DateOps](convention: Convention = ISDA) extends
         s"invalid reference period: date 1: $date1, date 2: $date2" +
           s", reference period start: $refPeriodStart, reference period end: $refPeriodEnd")
 
-      val duration = refPeriodEnd.daysBetween(refPeriodStart)
-      val (months, refStart, refEnd) = (0.5 + 12 * duration.toDouble / 365).toInt match {
+      val duration = refPeriodStart.dailyDifference(refPeriodEnd)
+      val (months, refStart, refEnd) = (0.5 + 12 * duration / 365).toInt match {
         case 0 => (12, date1, date1 + Period(1, Years))
         case i => (i, refPeriodStart, refPeriodEnd)
       }
 
-      val period = months / 12.0
+      val period = months.toDouble / 12.0
 
       if (date2 <= refEnd) {
-        // here refPeriodEnd is a future (notional?) payment date
         if (date1 >= refStart) {
-          // here refPeriodStart is the last (maybe notional) payment date.
-          // refPeriodStart <= date1 <= date2 <= refPeriodEnd
-          // [ maybe the equality should be enforced,
-          //   since refPeriodStart < date1 <= date2 < refPeriodEnd could give wrong results ] ???
-          period * dayCount(date1,date2) / dayCount(refPeriodStart,refPeriodEnd)
+          period * date1.dailyDifference(date2) / refStart.dailyDifference(refEnd)
         } else {
-          // here refPeriodStart is the next (maybe notional) payment date and refPeriodEnd is the second next
-          // (maybe notional) payment date. date1 < refPeriodStart < refPeriodEnd AND date2 <= refPeriodEnd
-          // this case is long first coupon
-
-          // the last notional payment date
           val previousRef = refStart - Period(months, Months)
           if (date2 > refStart)
             yearFractionISMA(date1, refStart, Some(previousRef), Some(refStart)) +
               yearFractionISMA(refStart, date2, Some(refStart), Some(refEnd))
           else
-            yearFractionISMA(date1,date2,Some(previousRef),Some(refStart))
+            yearFractionISMA(date1, date2, Some(previousRef), Some(refStart))
         }
       } else {
-        // here refPeriodEnd is the last (notional?) payment date
-        // date1 < refPeriodEnd < date2 AND refPeriodStart < refPeriodEnd
         require(refStart <= date1, "invalid dates: date1 < refPeriodStart < refPeriodEnd < date2")
-        // now it is: refPeriodStart <= date1 < refPeriodEnd < date2
-
-        // the part from date1 to refPeriodEnd
         val date1ToRefEnd = yearFractionISMA(date1, refEnd, Some(refStart), Some(refEnd))
 
-        // the part from refPeriodEnd to date2
-        // count how many regular periods are in [refPeriodEnd, date2],
-        // then add the remaining org.quantlib.time
-
         @tailrec
-        def sumUp(i:Int, sum: Double): (Double, D, D) = {
-          val newRefStart = refEnd + Period(months*i, Months)
-          val newRefEnd = refEnd + Period(months*(i+1), Months)
-          if (date2 < newRefEnd) (sum, newRefStart, newRefEnd) else sumUp(i+1, sum+period)
+        def sumUp(i: Int, sum: Double): (Double, D, D) = {
+          val newRefStart = refEnd + Period(months * i, Months)
+          val newRefEnd = refEnd + Period(months * (i + 1), Months)
+          if (date2 < newRefEnd) (sum, newRefStart, newRefEnd) else sumUp(i + 1, sum + period)
         }
+
         val (remaining, newRefStart, newRefEnd) = sumUp(0, date1ToRefEnd)
 
         remaining + yearFractionISMA(newRefStart, date2, Some(newRefStart), Some(newRefEnd))
@@ -125,22 +115,24 @@ final case class ActualActual[D: DateOps](convention: Convention = ISDA) extends
   private def yearFractionISDA(date1: D, date2: D,
                                refDate1: Option[D],
                                refDate2: Option[D]): Double = {
-    def base(date: D):Double = if (date.year.isLeap) 366.0 else 365.0
+
+    def base(date: D): Double = if (date.year.isLeap) 366.0 else 365.0
+
     if (date1 == date2) {
       0.0
     } else if (date1 > date2) {
       -yearFractionISDA(date2, date1, None, None)
     } else {
-        val years = date1 to (date2, Years)
-        val nextDay = date1 + Period(1, Days)
-
-        val fractionOfYearStart = dayCount(date1, from(1,  Month.JANUARY, date1.year.plusYears(1))) / base(date1)
-        val fractionOfYearEnd = dayCount(from(1, Month.JANUARY, date2.year), date2) / base(date2)
-
-        years + fractionOfYearStart + fractionOfYearEnd
+      val year1 = date1.year
+      val year2 = date2.year
+      var sum = year2 - year1 - 1.0
+      sum = sum + date1.dailyDifference(from(1, Month.JANUARY, Year.of(year1.getValue + 1))) / base(date1)
+      sum = sum + from(1, Month.JANUARY, year2).dailyDifference(date2) / base(date2)
+      sum
     }
 
   }
+
   private def yearFractionAFB(date1: D, date2: D,
                               refDate1: Option[D],
                               refDate2: Option[D]): Double = {
@@ -149,37 +141,46 @@ final case class ActualActual[D: DateOps](convention: Convention = ISDA) extends
     } else if (date1 > date2) {
       yearFractionAFB(date2, date1, refDate1, refDate2)
     } else {
-        val (yy1, mm1, ddate1) = date1.YMD
-        val (yy2, mm2, ddate2) = date2.YMD
 
-        val years = date1 to (date2, TimeUnit.Years)
-        val febInStart = from(29, Month.FEBRUARY, yy1) >= date1
+      val period = Period(1, Years)
+      var temp = date2
+      var newD2 = date2
+      var sum = 0.0
+      while (temp > date1) {
+        temp = newD2 - period
+        val (yy, mm, dom) = temp.YMD
+        temp = if (dom == 28 && mm == Month.FEBRUARY && yy.isLeap) temp + 1 else temp
 
-        if (years > 1) {
-          val fractionOfYearEndDate = from(ddate2, mm2, yy2.minusYears(years))
-          val yearBase = if (febInStart) 366 else 365
-
-          years.toDouble + (date1 to (fractionOfYearEndDate, TimeUnit.Days)).toDouble/ yearBase
-        } else {
-          val febInEnd = from(29, Month.FEBRUARY, yy2) < date2
-          val yearBase = if (febInStart || febInEnd) 366 else 365
-
-          (date1 to (date2, TimeUnit.Days)).toDouble / yearBase
+        if (temp >= date1) {
+          sum += 1.0
+          newD2 = temp
         }
+      }
+
+      val (yy2, mm2, dd) = newD2.YMD
+
+      var den = 365.0
+      if (yy2.isLeap) {
+        val temp = from(29, Month.FEBRUARY, yy2)
+        if (newD2 > temp && date1 <= temp) den += 1.0
+      } else if (date1.year.isLeap) {
+        val temp = from(29, Month.FEBRUARY, date1.year)
+        if (newD2 > temp && date1 <= temp) den += 1.0
+      }
+      sum + (date1.dailyDifference(newD2) / den)
+
     }
   }
 
-  private val yearFractionImpl:(D,D,Option[D],Option[D]) => Double = convention match {
-    case ISMA | Bond => yearFractionISMA
-    case ISDA | Historical | Actual365 => yearFractionISDA
-    case AFB | Euro => yearFractionAFB
+  override def yearFraction(date1: D, date2: D,
+                            refDate1: Option[D] = None,
+                            refDate2: Option[D] = None): Double = convention match {
+    case ISMA | Bond => yearFractionISMA(date1, date2, refDate1, refDate2)
+    case ISDA | Historical | Actual365 => yearFractionISDA(date1, date2, refDate1, refDate2)
+    case AFB | Euro => yearFractionAFB(date1, date2, refDate1, refDate2)
   }
 
-  override def yearFraction(date1: D, date2: D,
-                            refDate1: Option[D],
-                            refDate2: Option[D]): Double = yearFractionImpl(date1,date2,refDate1,refDate2)
-
-  override val toString:String = convention match {
+  override val toString: String = convention match {
     case ISMA | Bond => "Actual/Actual (ISMA)"
     case ISDA | Historical | Actual365 => "Actual/Actual (ISDA)"
     case AFB | Euro => "Actual/Actual (AFB)"

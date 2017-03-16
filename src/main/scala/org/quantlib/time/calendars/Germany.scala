@@ -1,6 +1,7 @@
 package org.quantlib.time.calendars
 
 import org.quantlib.time.calendars.BusinessCalendar.InternationalHolidays._
+import org.quantlib.time.calendars.BusinessCalendar.Western
 import org.quantlib.time.calendars.Germany.Market
 import org.quantlib.time.calendars.Germany.Market._
 import org.quantlib.time.implicits.DateOps
@@ -29,7 +30,7 @@ object Germany {
 
 }
 
-final case class Germany(market: Market = FrankfurtStockExchange) extends BusinessCalendar with WeekendSatSun {
+final case class Germany[D:DateOps](market: Market = FrankfurtStockExchange) extends WeekendSatSun[D] with BusinessCalendar[D]  {
 
   override val toString: String = market match {
     case FrankfurtStockExchange => "Frankfurt stock exchange"
@@ -39,31 +40,31 @@ final case class Germany(market: Market = FrankfurtStockExchange) extends Busine
     case Settlement => "German settlement"
   }
 
-  private def isNationalDay[D: DateOps](date: D): Boolean = {
+  private def isNationalDay(date: D): Boolean = {
     date.dom == 3 && inOctober(date)
   }
 
-  private def isLabourDay[D: DateOps](date: D): Boolean = {
+  private def isLabourDay(date: D): Boolean = {
     date.dom == 1 && inMay(date)
   }
-  private def SettlementBusinessDays[D: DateOps](date: D): Boolean = {
+  private def SettlementBusinessDays(date: D): Boolean = {
     !List[D => Boolean](isWeekend,
-      isNewYear, isGoodFriday,
-      isEasterMonday, isAscension,
-      isWhitMonday, isCorpusChristi, isNationalDay,
+      isNewYear, Western.isGoodFriday,
+      Western.isEasterMonday, Western.isAscension,
+      Western.isWhitMonday, Western.isCorpusChristi, isNationalDay,
       isLabourDay, isChristmasEve, isChristmas,
       isBoxingDay, isNewYearEve).exists(_.apply(date))
   }
 
-  private def FSEBusinessDays[D: DateOps](date: D): Boolean = {
+  private def FSEBusinessDays(date: D): Boolean = {
     !List[D => Boolean](isWeekend,
-      isNewYear, isGoodFriday,
-      isEasterMonday, isLabourDay,
+      isNewYear, Western.isGoodFriday,
+      Western.isEasterMonday, isLabourDay,
       isChristmasEve, isChristmas, isBoxingDay, isNewYearEve).exists(_.apply(date))
 
   }
 
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = market match {
+  override def considerBusinessDay(date: D): Boolean = market match {
     case FrankfurtStockExchange => FSEBusinessDays(date)
     case Xetra => FSEBusinessDays(date)
     case Eurex => FSEBusinessDays(date)

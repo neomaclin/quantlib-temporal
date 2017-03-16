@@ -23,7 +23,7 @@ final case class NoLeapActual[D: DateOps](daysOfYear: Int = 365) extends DayCoun
     if (m == Month.FEBRUARY && d == 29) n - 1 else n
   }
 
-  def dayCount(date1: D, date2: D): Long = s(date2) - s(date1)
+  def dayCount(date1: D, date2: D): Int = s(date2) - s(date1)
 
   def yearFraction(date1: D, date2: D,
                    refDate1: Option[D] = None,

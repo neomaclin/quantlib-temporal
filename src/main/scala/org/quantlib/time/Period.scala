@@ -14,6 +14,7 @@ object Period {
     case Period(length, Weeks) => (7 * length, 7 * length)
     case Period(length, Months) => (28 * length, 31 * length)
     case Period(length, Years) => (365 * length, 366 * length)
+    case _ => (Long.MinValue, Long.MaxValue)
   }
 
   implicit object PeriodOrder extends Ordering[Period] {
@@ -122,12 +123,13 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
   def -(p: Period): Period = this.+( -p )
 
 
-  private def descriptions(toDays: => String)(toWeeks: => String)(toMonths: => String)(toYears: => String): String = {
+  private def descriptions(toDays: => String)(toWeeks: => String)(toMonths: => String)(toYears: => String)(toDayFraction: => String): String = {
     unit match {
       case Days => toDays
       case Weeks => toWeeks
       case Months => toMonths
       case Years => toYears
+      case _ => toDayFraction
     }
   }
 
@@ -160,6 +162,8 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     } {
       //toYears
       length + "Y"
+    } {
+      ""
     }
 
   def longDescription: String =
@@ -195,6 +199,8 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     } {
       //toYears
       if (length == 1) "1 year" else length + " years"
+    }{
+      ""
     }
 
 
@@ -233,6 +239,7 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
               case 1 => Daily
               case _ => OtherFrequency
             }
+          case _ => OtherFrequency
         }
     }
 
@@ -244,6 +251,7 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     case Weeks => Double.NaN
     case Months => length / 12.0
     case Years => length
+    case _ => Double.NaN
   }
 
   def months: Double = unitMatching {
@@ -251,6 +259,7 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     case Weeks => Double.NaN
     case Months => length
     case Years => length * 12.0
+    case _ => Double.NaN
   }
 
 
@@ -259,6 +268,7 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     case Weeks => length
     case Months => Double.NaN
     case Years => Double.NaN
+    case _ => Double.NaN
   }
 
   def days: Double = unitMatching {
@@ -266,6 +276,7 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
     case Weeks => length * 7.0
     case Months => Double.NaN
     case Years => Double.NaN
+    case _ => Double.NaN
   }
 
   override val toString: String = longDescription

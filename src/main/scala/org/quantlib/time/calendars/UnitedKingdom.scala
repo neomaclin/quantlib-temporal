@@ -15,11 +15,11 @@ object UnitedKingdom{
     case object Metals extends Market
   }
 }
-final case class UnitedKingdom(market: Market = Settlement) extends BusinessCalendar with WeekendSatSun{
+final case class UnitedKingdom[D: DateOps](market: Market = Settlement) extends WeekendSatSun[D] with BusinessCalendar[D]{
   override val toString: String = market match {
     case  Settlement => "UK settlement"
     case  Exchange => "London Stock Exchange"
     case  Metals => "London Metals Exchange"
   }
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = ???
+  override def considerBusinessDay(date: D): Boolean = ???
 }

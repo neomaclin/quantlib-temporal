@@ -5,6 +5,8 @@ import java.time._
 
 import org.quantlib.time.Period
 import org.quantlib.time.enums.TimeUnit
+import org.quantlib.time.implicits.Date.LocalDateOps
+import org.quantlib.time.implicits.DateTime.LocalDateTimeOps
 
 trait DateOps[D] {
 
@@ -32,12 +34,6 @@ trait DateOps[D] {
 
   def HMSN(date: D): (Int, Int, Int, Int)
 
-  def daysBetween(date1: D, date2: D): Long
-
-  def ==(date1: D, date2: D): Boolean
-
-  def !=(date1: D, date2: D): Boolean = ! ==(date1, date2)
-
   def <(date1: D, date2: D): Boolean
 
   def <=(date1: D, date2: D): Boolean = ! >(date1, date2)
@@ -50,11 +46,11 @@ trait DateOps[D] {
 
   def max(date1: D, date2: D): D
 
-  def +(date: D, days: Long): D
+  def +(date: D, days: Int): D
 
   def +(date: D, period: Period): D
 
-  def -(date: D, days: Long): D
+  def -(date: D, days: Int): D
 
   def -(date: D, period: Period): D
 
@@ -68,6 +64,7 @@ trait DateOps[D] {
 
   def lastDayOf(month: Month, year: Year): D
 
+  def dailyDifference(date1: D, date2: D): Double
 //  def compareTo(date1: D, date2: D): Int
 
   def sameYear(date1: D, date2: D): Boolean
@@ -91,7 +88,8 @@ trait DateOps[D] {
 
 
 object DateOps {
-
+ // implicit val localDateEv = LocalDateOps
+ // implicit val localDateTimeEv = LocalDateTimeOps
   def from[D: DateOps](day: Int, month: Month, year: Year): D ={
     implicitly[DateOps[D]].from(day,month,year)
   }
@@ -105,11 +103,33 @@ object DateOps {
   implicit class YearClass(val year: Year) extends AnyVal {
     def -(other: Year): Int = year.getValue - other.getValue
 
+    def >(other: Year): Boolean = year.getValue > other.getValue
+
+    def <(other: Year): Boolean = year.getValue < other.getValue
+
+    def <=(other: Year): Boolean = ! >(other)
+    def >=(other: Year): Boolean = ! <(other)
+
+    def >(other: Int): Boolean = year.getValue > other
+
+    def <(other: Int): Boolean = year.getValue < other
+
+    def <=(other: Int): Boolean = ! >(other)
+    def >=(other: Int): Boolean = ! <(other)
+
     def ===(number: Int): Boolean = year.getValue == number
   }
 
   implicit class MonthClass(val month: Month) extends AnyVal {
     def -(other: Month): Int = month.getValue - other.getValue
+    def >(other: Month): Boolean = month.getValue > other.getValue
+
+    def <(other: Month): Boolean = month.getValue < other.getValue
+
+    def <=(other: Month): Boolean = ! >(other)
+    def >=(other: Month): Boolean = ! <(other)
+
+   // def ===(other: Int): Boolean = Month.getValue == number
   }
 
   implicit class DateOpsClass[D: DateOps](val date: D)  {
@@ -142,11 +162,7 @@ object DateOps {
 
     def year: Year = impl.yearOf(date)
 
-    def daysBetween(other: D): Long = impl.daysBetween(date, other)
-
-   // def ==(other: D): Boolean = impl.==(date, other)
-
-   // def !=(other: D): Boolean = ! ==(other)
+    def dailyDifference(other: D): Double= impl.dailyDifference(date, other)
 
     def <(other: D): Boolean = impl.<(date, other)
 
@@ -160,11 +176,11 @@ object DateOps {
 
     def max(other: D): D = impl.max(date, other)
 
-    def +(days: Long): D = impl.+(date, days)
+    def +(days: Int): D = impl.+(date, days)
 
     def +(period: Period): D = impl.+(date, period)
 
-    def -(days: Long): D = impl.-(date, days)
+    def -(days: Int): D = impl.-(date, days)
 
     def -(period: Period): D = impl.-(date, period)
 
@@ -183,12 +199,9 @@ object DateOps {
     def isSameMonthOf(other: D): Boolean = impl.sameMonth(date, other)
   }
 
-  implicit class WeekdayWrapper(val dayOfWeek: DayOfWeek) extends AnyVal {
+  implicit class WeekdayClass(val dayOfWeek: DayOfWeek) extends AnyVal {
 
     def >=(other: DayOfWeek): Boolean = dayOfWeek.getValue >= other.getValue
-
-    def >=(other: Int): Boolean = dayOfWeek.getValue >= other
-
 
     def -(other: Int): Int = dayOfWeek.getValue - other
 

@@ -10,7 +10,7 @@ import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 
 
-final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) extends DayCountBasis[D] {
+final case class Business252[D: DateOps](calendar: BusinessCalendar[D]) extends DayCountBasis[D] {
 
   override val toString = s"Business/252($calendar)"
   type OuterCache = Map[Year, Int]
@@ -26,7 +26,7 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
       case None => {
         val d1 = from(1, month, year)
         val d2 = d1 + Period(1, Months)
-        val length = calendar.businessDaysBetween(d1, d2)
+        val length = BusinessCalendar.businessDaysBetween(d1, d2,calendar)
         monthlyCache = monthlyCache + ((year, month) -> length)
         length
       }
@@ -45,11 +45,11 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
     }
   }
 
-  override def dayCount(d1: D, d2: D): Long = {
+  override def dayCount(d1: D, d2: D): Int = {
     if (d1.isSameMonthOf(d2) || d1 >= d2) {
       // we treat the case of d1 > d2 here, since we'd need a second cache to get it right
       // (our cached figures are for first included, last excluded and might have to be changed going the other way.)
-      calendar.businessDaysBetween(d1, d2)
+      BusinessCalendar.businessDaysBetween(d1, d2,calendar)
     } else if (d1.isSameYearOf(d2)) {
       // Cache& cache = monthlyFigures_[calendar_.name()];
       // Date::serial_type total = 0;
@@ -57,14 +57,14 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
       // first, we get to the beginning of next month.
       var endDate = from(1, d1.month, d1.year) + Period(1, Months)
 
-      var total = calendar.businessDaysBetween(d1, endDate)
+      var total = BusinessCalendar.businessDaysBetween(d1, endDate,calendar)
       // then, we add any whole months (whose figures might be cached already) in the middle of our period.
       while (!endDate.isSameMonthOf(d2)) {
         total = total + businessDays(endDate.month, endDate.year)
         endDate = endDate + Period(1, Months)
       }
       // finally, we get to the end of the period.
-      total = total + calendar.businessDaysBetween(endDate, d2);
+      total = total + BusinessCalendar.businessDaysBetween(endDate, d2,calendar)
       total
     } else {
       // Cache& cache = monthlyFigures_[calendar_.name()];
@@ -75,7 +75,7 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
       // first, we get to the beginning of next year.
       // The first bit gets us to the end of this month...
       //d = Date(1,d1.month(),d1.year()) + 1*Months;
-      var total = calendar.businessDaysBetween(d1, endDate)
+      var total = BusinessCalendar.businessDaysBetween(d1, endDate,calendar)
       // ...then we add any remaining months, possibly cached
       d1.month.getValue to 12 foreach {
         m => total = total + businessDays(Month.of(m), endDate.year)
@@ -94,7 +94,7 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
       }
       // ...then the last bit.
       endDate = from(1, d2.month, d2.year)
-      total = total + calendar.businessDaysBetween(endDate, d2)
+      total = total + BusinessCalendar.businessDaysBetween(endDate, d2,calendar)
       total
     }
   }
@@ -102,9 +102,7 @@ final case class Business252[D: DateOps](calendar: BusinessCalendar = Brazil()) 
   override def yearFraction(date1: D,
                             date2: D,
                             refDate1: Option[D] = None,
-                            refDate2: Option[D] = None): Double
-
-  = dayCount(date1, date2) / 252.0
+                            refDate2: Option[D] = None): Double = dayCount(date1, date2) / 252.0
 
 }
 

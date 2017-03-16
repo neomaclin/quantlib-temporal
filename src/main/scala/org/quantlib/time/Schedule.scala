@@ -12,15 +12,14 @@ import org.quantlib.time.enums._
   * Created by neo on 12/14/15.
   */
 
-final case class Schedule(dates: List[(LocalDate, Boolean)],
-                          calendar: BusinessCalendar,
+final case class Schedule(dates: List[LocalDate],
+                          calendar: BusinessCalendar[LocalDate],
                           convention: BusinessDayConvention = Unadjusted,
-                          terminationDateConvention: Option[BusinessDayConvention] = None,
-                          tenor: Option[Period] = None,
-                          rule: Option[DateGenerationRule] = None,
-                          endOfMonth: Option[Boolean] = None) {
+                          terminationDateConvention: BusinessDayConvention,
+                          tenor: Period,
+                          rule: DateGenerationRule,
+                          endOfMonth: Boolean) {
 
-  def at(i: Int): (LocalDate, Boolean) = dates.apply(i)
 
 }
 
@@ -29,7 +28,7 @@ object Schedule {
   def from(effectiveDate: LocalDate,
            terminationDate: LocalDate,
            tenor: Period,
-           calendar: BusinessCalendar,
+           calendar: BusinessCalendar[LocalDate],
            convention: BusinessDayConvention,
            terminationDateConvention: BusinessDayConvention,
            rule: DateGenerationRule,
@@ -71,8 +70,8 @@ object Schedule {
 //  }
 
   def allowsEndOfMonth(tenor: Period): Boolean = ???
-//  {
-//    (tenor.units == Months || tenor.units == Years) && tenor >= Period(1, Months)
-//  }
+  //  {
+   // (tenor.unit == Months || tenor.unit == Years) && tenor >= Period(1, Months)
+ // }
 
 }

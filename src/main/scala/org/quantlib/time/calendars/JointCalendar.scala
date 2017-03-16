@@ -27,15 +27,15 @@ object JointCalendar {
 
 }
 
-final case class JointCalendar(calendars: List[BusinessCalendar],
-                               rule: JointCalendarRule = JoinHolidays) extends BusinessCalendar {
+final case class JointCalendar[D: DateOps](calendars: List[BusinessCalendar[D]],
+                               rule: JointCalendarRule = JoinHolidays) extends BusinessCalendar[D] {
 
-  def isWeekend[D: DateOps](date: D): Boolean = rule match {
+  def isWeekend(date: D): Boolean = rule match {
     case JoinHolidays => calendars.exists(_.isWeekend(date))
     case JoinBusinessDays => !calendars.exists(!_.isWeekend(date))
   }
 
-  def considerBusinessDay[D: DateOps](date: D): Boolean = rule match {
+  def considerBusinessDay(date: D): Boolean = rule match {
     case JoinHolidays => !calendars.exists(!_.considerBusinessDay(date))
     case JoinBusinessDays => calendars.exists(_.considerBusinessDay(date))
   }

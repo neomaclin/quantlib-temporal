@@ -18,7 +18,7 @@ object Indonesia {
 
 }
 
-final  case class Indonesia(market: Market = IDX) extends  BusinessCalendar with WeekendSatSun{
+final  case class Indonesia[D: DateOps](market: Market = IDX) extends WeekendSatSun[D] with BusinessCalendar[D]{
   override val toString: String = "Jakarta stock exchange"
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = ???
+  override def considerBusinessDay(date: D): Boolean = ???
 }

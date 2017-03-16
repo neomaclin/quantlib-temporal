@@ -1,4 +1,4 @@
-name := "quantlib-org.quantlib.time"
+name := "quantlib-temporal"
 
 version := "1.0"
 

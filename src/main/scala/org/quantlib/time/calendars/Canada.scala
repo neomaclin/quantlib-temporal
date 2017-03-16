@@ -1,5 +1,6 @@
 package org.quantlib.time.calendars
 
+import org.quantlib.time.calendars.BusinessCalendar.Western
 import org.quantlib.time.calendars.Canada.Market
 import org.quantlib.time.calendars.Canada.Market._
 import org.quantlib.time.implicits.DateOps
@@ -21,7 +22,7 @@ object Canada {
 
 
 
-final case class Canada(market: Market = Settlement) extends BusinessCalendar with WeekendSatSun {
+final case class Canada[D: DateOps](market: Market = Settlement) extends WeekendSatSun[D] with BusinessCalendar[D]  {
 
   import BusinessCalendar.InternationalHolidays._
 
@@ -30,34 +31,34 @@ final case class Canada(market: Market = Settlement) extends BusinessCalendar wi
     case Settlement => "Canada"
   }
 
-  private def isFamilyDay[D: DateOps](date: D) = {
+  private def isFamilyDay(date: D) = {
     val dom = date.dom
     (((dom >= 15 && dom <= 21) && isMonday(date)) && date.year.getValue >= 2008) && inFebruary(date)
   }
 
-  private def isVictoriaDay[D: DateOps](date: D) = {
+  private def isVictoriaDay(date: D) = {
     val dom = date.dom
     ((dom >= 17 && dom <= 24) && isMonday(date)) && inMay(date)
   }
 
-  private def isCanadaDay[D: DateOps](date: D) = {
+  private def isCanadaDay(date: D) = {
     val dom = date.dom
     (dom == 1 || ((dom == 2 || dom == 3) && isMonday(date))) && inJuly(date)
   }
 
-  private def isNovember11st[D: DateOps](date: D) = {
+  private def isNovember11st(date: D) = {
     val dom = date.dom
     (dom == 11 || ((dom == 12 || dom == 13) && isMonday(date))) && inNovember(date)
   }
 
-  override def considerBusinessDay[D: DateOps](date: D):Boolean = market match {
+  override def considerBusinessDay(date: D):Boolean = market match {
     case TSX => considerBusinessDayTSX(date)
     case Settlement => considerBusinessDaySettelment(date)
 
   }
 
-  private def considerBusinessDayTSX[D: DateOps](date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isGoodFriday, isNewYear, isNewYearOnMonday
+  private def considerBusinessDayTSX(date: D): Boolean = {
+    !List[D => Boolean](isWeekend, Western.isGoodFriday, isNewYear, isNewYearOnMonday
       , isFamilyDay
       , isVictoriaDay
       , isCanadaDay
@@ -68,8 +69,8 @@ final case class Canada(market: Market = Settlement) extends BusinessCalendar wi
       , isBoxingDay).exists(_.apply(date))
   }
 
-  private def considerBusinessDaySettelment[D: DateOps](date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isGoodFriday, isNewYear, isNewYearOnMonday
+  private def considerBusinessDaySettelment(date: D): Boolean = {
+    !List[D => Boolean](isWeekend, Western.isGoodFriday, isNewYear, isNewYearOnMonday
       , isFamilyDay
       , isVictoriaDay
       , isCanadaDay

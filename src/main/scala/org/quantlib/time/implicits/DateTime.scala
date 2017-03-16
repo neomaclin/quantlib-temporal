@@ -38,13 +38,9 @@ object DateTime {
       if (date1.equals(min(date1, date2))) date2 else date1
     }
 
-    override def YMD(date: LocalDateTime): (Year, Month, Int) = (Year.of(date.getYear), date.getMonth, date.getDayOfYear)
+    override def YMD(date: LocalDateTime): (Year, Month, Int) = (Year.of(date.getYear), date.getMonth, date.getDayOfMonth)
 
-    override def HMSN(date: LocalDateTime) = (date.getHour, date.getMinute, date.getSecond, date.getNano)
-
-    override def daysBetween(date1: LocalDateTime, date2: LocalDateTime): Long = ChronoUnit.DAYS.between(date1, date2)
-
-    override def ==(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.isEqual(date2)
+    override def HMSN(date: LocalDateTime): (Int, Int, Int, Int) = (date.getHour, date.getMinute, date.getSecond, date.getNano)
 
     override def <(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.isBefore(date2)
 
@@ -74,7 +70,7 @@ object DateTime {
 
     override def doy(date: LocalDateTime): Int = date.getDayOfYear
 
-    override def +(date: LocalDateTime, days: Long): LocalDateTime = date.plusDays(days)
+    override def +(date: LocalDateTime, days: Int): LocalDateTime = date.plusDays(days)
 
     override def +(date: LocalDateTime, period: Period): LocalDateTime = {
       val Period(length, unit) = period
@@ -99,7 +95,7 @@ object DateTime {
       }
     }
 
-    override def -(date: LocalDateTime, days: Long): LocalDateTime = date.minusDays(days)
+    override def -(date: LocalDateTime, days: Int): LocalDateTime = date.minusDays(days)
 
     override def -(date: LocalDateTime, period: Period): LocalDateTime = {
       val Period(length, unit) = period
@@ -140,7 +136,24 @@ object DateTime {
 
     override def nextWednesday(date: LocalDateTime): LocalDateTime = ???
 
-    override def lengthBetween(date1: LocalDateTime, date2: LocalDateTime, timeUnit: TimeUnit): Long = ???
+    override def lengthBetween(date1: LocalDateTime, date2: LocalDateTime, timeUnit: TimeUnit): Long = {
+      timeUnit match {
+        case Days => ChronoUnit.DAYS.between(date1, date2)
+        case Weeks => ChronoUnit.WEEKS.between(date1,date2)
+        case Months => ChronoUnit.MONTHS.between(date1,date2)
+        case Years => ChronoUnit.YEARS.between(date1,date2)
+        case Hours => ChronoUnit.HOURS.between(date1,date2)
+        case Minutes => ChronoUnit.MINUTES.between(date1,date2)
+        case Seconds => ChronoUnit.SECONDS.between(date1,date2)
+        case Milliseconds => ChronoUnit.MILLIS.between(date1,date2)
+        case Microseconds => ChronoUnit.MICROS.between(date1,date2)
+
+      }
+    }
+
+    override def dailyDifference(date1: LocalDateTime, date2: LocalDateTime): Double = {
+      ChronoUnit.DAYS.between(date1, date2) + (date2.toLocalTime.toSecondOfDay -date1.toLocalTime.toSecondOfDay)/86400.0
+    }
   }
 
 }

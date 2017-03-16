@@ -7,31 +7,31 @@ import org.quantlib.time.implicits.DateOps._
 /**
   * Created by neo on 11/03/2017.
   */
-case object Denmark extends BusinessCalendar with WeekendSatSun {
+final case class Denmark[D: DateOps]() extends WeekendSatSun[D] with BusinessCalendar[D] {
 
   import BusinessCalendar.InternationalHolidays._
 
-  private def isMaundayThursday[D: DateOps](date: D): Boolean = {
+  private def isMaundayThursday(date: D): Boolean = {
     date.doy == Western.easterMonday(date.year) - 4
   }
 
-  private def isGeneralPrayerDay[D: DateOps](date: D): Boolean = {
+  private def isGeneralPrayerDay(date: D): Boolean = {
     date.doy == Western.easterMonday(date.year) + 25
   }
 
 
-  private def isConstitutionDay[D: DateOps](date: D): Boolean = {
+  private def isConstitutionDay(date: D): Boolean = {
     val dom = date.dom
     dom == 5 && inJune(date)
   }
 
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = {
+  override def considerBusinessDay(date: D): Boolean = {
     !List[D => Boolean](isWeekend
-      , isNewYear, isGoodFriday
-      , isEasterMonday
+      , isNewYear, Western.isGoodFriday
+      , Western.isEasterMonday
       , isMaundayThursday, isGeneralPrayerDay
-      , isAscension
-      , isWhitMonday, isConstitutionDay
+      , Western.isAscension
+      , Western.isWhitMonday, isConstitutionDay
       , isBoxingDay
       , isChristmas).exists(_.apply(date))
   }

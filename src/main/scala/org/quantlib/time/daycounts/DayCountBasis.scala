@@ -5,8 +5,8 @@ package org.quantlib.time.daycounts
   */
 trait DayCountBasis[D] {
 
-  def dayCount(date1: D, date2: D): Long
+  def dayCount(date1: D, date2: D): Int
 
-  def yearFraction(date1: D, date2: D,  refDate1: Option[D], refDate2: Option[D]): Double
+  def yearFraction(date1: D, date2: D,  refDate1: Option[D] = None, refDate2: Option[D] = None): Double
 
 }

@@ -120,36 +120,31 @@ object China {
      DateOps.from(30,SEPTEMBER,Year.of(2017))
   )
 
-//  import org.quantlib.time.implicits.DateTime
-
-//  private val workingWeekendsDT: List[LocalDateTime] = workingWeekendsD.map(DateTime.toLocalDateTime)
-//
-//  private def workingWeekends[D](implicit d: DateOps[D]) = d match {}
 }
 
-final case class China(market: market = SSE) extends BusinessCalendar with WeekendSatSun {
+final case class China[D: DateOps](market: market = SSE) extends WeekendSatSun[D] with BusinessCalendar[D]  {
   override val toString: String = market match {
     case SSE => "Shanghai stock exchange"
     case IB => "China inter bank market"
   }
 
-  private def considerBusinessDaySSE[D: DateOps](date: D): Boolean = {
+  private def considerBusinessDaySSE(date: D): Boolean = {
     !List[D => Boolean](isWeekend, isNewYear,
       isChineseNewYear, isChingming, isLaborDay, isTuenNg,
       ismidAutumn, isNationalDay, isAntiJapanAnniversory).exists(_.apply(date))
 
   }
-  private def considerBusinessDayIB[D: DateOps](date: D): Boolean = ???
+  private def considerBusinessDayIB(date: D): Boolean = ???
     //workingWeekends.contains[D](date)
 
 
-  override def considerBusinessDay[D: DateOps](date: D): Boolean = market match {
+  override def considerBusinessDay(date: D): Boolean = market match {
     case SSE => considerBusinessDaySSE(date)
     case IB => considerBusinessDayIB(date)
   }
 
 
-  private def isNewYear[D: DateOps](date: D) = {
+  private def isNewYear(date: D) = {
     val (y, m, dd) = date.YMD
     (dd == 1 && m == JANUARY) ||
       (y === 2005 && dd == 3 && m == JANUARY) ||
@@ -165,7 +160,7 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2017 && dd == 2 && m == JANUARY)
   }
 
-  private def isChineseNewYear[D: DateOps](date: D) = {
+  private def isChineseNewYear(date: D) = {
     val (y, m, dd) = date.YMD
     (y === 2004 && dd >= 19 && dd <= 28 && m == JANUARY) ||
       (y === 2005 && dd >= 7 && dd <= 15 && m == FEBRUARY) ||
@@ -184,7 +179,7 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2017 && ((dd >= 27 && m == JANUARY) || (dd <= 2 && m == FEBRUARY)))
   }
 
-  private def isChingming[D: DateOps](date: D) = {
+  private def isChingming(date: D) = {
     val (y, m, dd) = date.YMD
     (y.getValue <= 2008 && dd == 4 && m == APRIL) ||
       (y === 2009 && dd == 6 && m == APRIL) ||
@@ -198,7 +193,7 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2017 && dd >= 3 && dd <= 4 && m == APRIL)
   }
 
-  private def isLaborDay[D: DateOps](date: D) = {
+  private def isLaborDay(date: D) = {
     val (y, m, dd) = date.YMD
     (y.getValue <= 2007 && dd >= 1 && dd <= 7 && m == MAY) ||
       (y === 2008 && dd >= 1 && dd <= 2 && m == MAY) ||
@@ -210,7 +205,7 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2017 && dd == 1 && m == MAY)
   }
 
-  private def isTuenNg[D: DateOps](date: D) = {
+  private def isTuenNg(date: D) = {
     val (y, m, dd) = date.YMD
     (y.getValue <= 2008 && dd == 9 && m == JUNE) ||
       (y === 2009 && (dd == 28 || dd == 29) && m == MAY) ||
@@ -224,13 +219,13 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2017 && dd >= 29 && dd <= 30 && m == MAY)
   }
 
-  private def isAntiJapanAnniversory[D: DateOps](date: D) = {
+  private def isAntiJapanAnniversory(date: D) = {
     val (y, m, dd) = date.YMD
 
     y === 2015 && dd >= 3 && dd <= 4 && m == SEPTEMBER
   }
 
-  private def ismidAutumn[D: DateOps](date: D) = {
+  private def ismidAutumn(date: D) = {
     val (y, m, dd) = date.YMD
     (y.getValue <= 2008 && dd == 15 && m == SEPTEMBER) ||
       (y === 2010 && dd >= 22 && dd <= 24 && m == SEPTEMBER) ||
@@ -242,7 +237,7 @@ final case class China(market: market = SSE) extends BusinessCalendar with Weeke
       (y === 2016 && dd >= 15 && dd <= 16 && m == SEPTEMBER)
   }
 
-  private def isNationalDay[D: DateOps](date: D) = {
+  private def isNationalDay(date: D) = {
     val (y, m, dd) = date.YMD
     (y.getValue <= 2007 && dd >= 1 && dd <= 7 && m == OCTOBER) ||
       (y === 2008 && ((dd >= 29 && m == SEPTEMBER) || (dd <= 3 && m == OCTOBER))) ||

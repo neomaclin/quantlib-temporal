@@ -4,6 +4,6 @@ import org.quantlib.time.implicits.DateOps
 /**
   * Created by neo on 11/03/2017.
   */
-case object Japan extends BusinessCalendar with WeekendSatSun{
-  override def considerBusinessDay[D:DateOps](date: D): Boolean = ???
+final case class Japan[D: DateOps]() extends WeekendSatSun[D] with BusinessCalendar[D]{
+  override def considerBusinessDay(date: D): Boolean = ???
 }
