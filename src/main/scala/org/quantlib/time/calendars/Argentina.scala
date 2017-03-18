@@ -12,9 +12,11 @@ final case class Argentina[D: DateOps](market: Market = Merval) extends WeekendS
   import BusinessCalendar.InternationalHolidays._
 
   override val toString: String = "Buenos Aires stock exchange"
-
-  override def considerBusinessDay(date:D): Boolean = {
-    !List[D => Boolean](isWeekend, isHolyThursday, Western.isGoodFriday,
+  private val holidays =
+    List[D => Boolean](
+      isWeekend,
+      Western.isHolyThursday,
+      Western.isGoodFriday,
       isNewYear,
       isMayRevolutionDay,
       isLabourDay,
@@ -24,48 +26,35 @@ final case class Argentina[D: DateOps](market: Market = Merval) extends WeekendS
       isColumbusDay,
       isImmaculateConception,
       isChristmasEve,
-      isNewYearEve).exists(_.apply(date))
-  }
+      isNewYearEve)
 
-  private def isMayRevolutionDay(date: D) = {
-    date.dom == 1 && inMay(date)
-  }
+  override def considerBusinessDay(date: D): Boolean = !holidays.exists(f => f(date))
 
-  private def isLabourDay(date: D) = {
-    date.dom == 25 && inMay(date)
-  }
+  private def isMayRevolutionDay(date: D) = date.dom == 1 && date.inMay
 
-  private def isHolyThursday(date: D) = {
-    date.doy == Western.easterMonday(date.year) - 4
-  }
+  private def isLabourDay(date: D) = date.dom == 25 && date.inMay
 
   private def theThirdWeek(date: D) = {
     val dom = date.dom
-    dom >= 15 && dom <= 21 && isMonday(date)
+    dom >= 15 && dom <= 21 && date.dow.isMonday
   }
 
-  private def isDeathofGeneralManuelBelgrano(date: D) = {
-    theThirdWeek(date) && inJune(date)
-  }
+  private def isDeathofGeneralManuelBelgrano(date: D) = theThirdWeek(date) && date.inJune
 
-  private def isIndependenceDay(date: D) = {
-    date.dom == 9 && inJuly(date)
-  }
+  private def isIndependenceDay(date: D) = date.dom == 9 && date.inJuly
 
-  private def isDeathofGeneralJosédeSanMartín(date: D) = {
-    theThirdWeek(date) && inAugust(date)
-  }
+  private def isDeathofGeneralJosédeSanMartín(date: D) = theThirdWeek(date) && date.inAugust
 
   private def isColumbusDay(date: D) = {
     val dom = date.dom
-    ((dom == 10 || dom == 11 || dom == 12 || dom == 15 || dom == 16) && isMonday(date)) && inOctober(date)
+    ((dom == 10 || dom == 11 || dom == 12 || dom == 15 || dom == 16) && date.dow.isMonday) && date.inOctober
   }
 
-  private def isImmaculateConception(date: D) = date.dom == 8 && inDecember(date)
+  private def isImmaculateConception(date: D) = date.dom == 8 && date.inDecember
 
   private def isNewYearEve(date: D) = {
     val dom = date.dom
-    (dom == 31 || (dom == 30 && isFriday(date))) && inDecember(date)
+    (dom == 31 || (dom == 30 && date.dow.isFriday)) && date.inDecember
   }
 
 }
@@ -79,6 +68,5 @@ object Argentina {
     case object Merval extends Market
 
   }
-
 
 }

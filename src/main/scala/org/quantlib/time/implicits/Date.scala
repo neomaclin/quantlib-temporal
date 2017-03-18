@@ -170,12 +170,4 @@ object Date {
     override def dailyDifference(date1: LocalDate, date2: LocalDate): Double =  ChronoUnit.DAYS.between(date1, date2).toDouble
   }
 
-  //  def firstDayOf(month: Int, year: Int): LocalDate = {
-  //    LocalDate.now.withDayOfMonth(1).withMonthOfYear(month).withYear(year)
-  //  }
-  //
-  //  def lastDayOf(month: Int, year: Int): LocalDate = {
-  //    firstDayOf(month,year).plusMonths(1).plusDays(-1)
-  //  }
-
 }

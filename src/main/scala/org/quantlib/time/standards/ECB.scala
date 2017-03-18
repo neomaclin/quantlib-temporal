@@ -67,7 +67,7 @@ final case class ECB[D: DateOps](dates: List[Int]) extends StandardFormat[D] {
 
   override def toDate(code: String, refDate: D): Option[D] = ???
 
-  override def nextCode(code: String, mainCycle: Boolean, refDate: D): Option[String] = ???
+  override def nextCode(code: String, mainCycle: Boolean, refDate: D): String = ???
 
-  override def nextCode(date: D, mainCycle: Boolean): Option[String] = ???
+  override def nextCode(date: D, mainCycle: Boolean): String = ???
 }

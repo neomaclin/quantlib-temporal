@@ -23,68 +23,55 @@ object CzechRepublic {
 
 }
 
-final case class CzechRepublic[D: DateOps](market: Market = PSE) extends WeekendSatSun[D] with BusinessCalendar[D]  {
+final case class CzechRepublic[D: DateOps](market: Market = PSE) extends WeekendSatSun[D] with BusinessCalendar[D] {
   override val toString: String = market match {
     case PSE => "Prague stock exchange"
   }
 
   import BusinessCalendar.InternationalHolidays._
 
+  private def isLabourDay(date: D) = date.dom == 1 && date.inMay
 
-  private def isLabourDay(date: D) = {
-    date.dom == 1 && inMay(date)
-  }
+  private def isLiberationDay(date: D) = date.dom == 8 && date.inMay
 
-  private def isLiberationDay(date: D) = {
-    date.dom == 8 && inMay(date)
-  }
+  private def isSSCyrilAndMethodius(date: D) = date.dom == 5 && date.inJuly
 
-  private def isSSCyrilAndMethodius(date: D) = {
-    date.dom == 5 && inJuly(date)
-  }
+  private def isJanHusDay(date: D) = date.dom == 6 && date.inJuly
 
-  private def isJanHusDay(date: D) = {
-    date.dom == 6 && inJuly(date)
-  }
+  private def isCzechStatehoodDay(date: D) = date.dom == 28 && date.inSeptember
 
-  private def isCzechStatehoodDay(date: D) = {
-    date.dom == 28 && inSeptember(date)
-  }
+  private def isChristmas(date: D): Boolean = date.dom == 25 && date.inDecember
 
-  private def isChristmas(date: D): Boolean = {
-    date.dom == 25 && inDecember(date)
-  }
+  private def isChristmasEve(date: D): Boolean = date.dom == 24 && date.inDecember
 
-  private def isChristmasEve(date: D): Boolean = {
-    date.dom == 24 && inDecember(date)
-  }
+  private def isIndependenceDay(date: D) = date.dom == 28 && date.inOctober
 
-  private def isIndependenceDay(date: D) = {
-    date.dom == 28 && inOctober(date)
-  }
-
-  private def isFreedomandDemocracyStruggleDay(date: D) = {
-    date.dom == 17 && inNovember(date)
-  }
-
-  private def isStStephenDay(date: D) = {
-    date.dom == 26 && inDecember(date)
-  }
+  private def isFreedomandDemocracyStruggleDay(date: D) = date.dom == 17 && date.inNovember
 
   private def closingDateOfExchange(date: D) = {
     val (yy, mm, dd) = date.YMD
     (dd == 2 && mm == Month.JANUARY && yy === 2004) || (dd == 31 && mm == Month.DECEMBER && yy === 2004)
   }
 
+  private val holidays =
+    List[D => Boolean](
+      isWeekend,
+      isNewYear,
+      isLiberationDay,
+      Western.isEasterMonday,
+      isSSCyrilAndMethodius,
+      isIndependenceDay,
+      isCzechStatehoodDay,
+      isJanHusDay,
+      isCzechStatehoodDay,
+      isFreedomandDemocracyStruggleDay,
+      isChristmas,
+      isChristmasEve,
+      isStStephenDay,
+      closingDateOfExchange)
+
   override def considerBusinessDay(date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isNewYear, isLiberationDay
-      , Western.isEasterMonday
-      , isSSCyrilAndMethodius, isIndependenceDay
-      , isCzechStatehoodDay
-      , isJanHusDay, isCzechStatehoodDay
-      , isFreedomandDemocracyStruggleDay
-      , isChristmas, isChristmasEve
-      , isStStephenDay, closingDateOfExchange).exists(_.apply(date))
+    !holidays.exists(f => f(date))
   }
 }
 

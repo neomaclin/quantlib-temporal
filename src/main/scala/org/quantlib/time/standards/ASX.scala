@@ -17,8 +17,7 @@ object ASX{
 }
 final case class ASX[D: DateOps]() extends StandardFormat[D] {
   import ASX._
-  //! returns whether or not the given date is an ASX date
-  //  def isASXdate[D: DateOps](date: D, mainCycle: Boolean): Boolean = ???
+
   def confirm(date: D, mainCycle: Boolean): Boolean = {
     if (date.dow != FRIDAY) {
       false
@@ -111,9 +110,9 @@ final case class ASX[D: DateOps]() extends StandardFormat[D] {
     toDate(code, refDate).flatMap(date => nextDate(date, mainCycle))
   }
 
-  def nextCode(d: D, mainCycle: Boolean): Option[String] = nextDate(d, mainCycle) map toCode
+  def nextCode(d: D, mainCycle: Boolean): String = nextDate(d, mainCycle) map toCode getOrElse ""
 
-  def nextCode(code: String, mainCycle: Boolean, refDate: D): Option[String] = nextDate(code, mainCycle, refDate) map toCode
+  def nextCode(code: String, mainCycle: Boolean, refDate: D): String = nextDate(code, mainCycle, refDate) map toCode getOrElse ""
 
   def addDate(date: D, mainCycle: Boolean): StandardFormat[D] = this
 

@@ -19,132 +19,138 @@ object China {
     case object IB extends market
 
   }
-  import org.quantlib.time.implicits.Date.LocalDateOps
 
-  private val workingWeekends = List(
-     DateOps.from(5, FEBRUARY, Year.of(2005)),
-     DateOps.from(6, FEBRUARY, Year.of(2005)),
-     DateOps.from(30, APRIL, Year.of(2005)),
-     DateOps.from(8, MAY, Year.of(2005)),
-     DateOps.from(8, OCTOBER, Year.of(2005)),
-     DateOps.from(9, OCTOBER, Year.of(2005)),
-     DateOps.from(31, DECEMBER, Year.of(2005)),
-    //Year.of(2006
-     DateOps.from(28, JANUARY, Year.of(2006)),
-     DateOps.from(29, APRIL, Year.of(2006)),
-     DateOps.from(30, APRIL, Year.of(2006)),
-     DateOps.from(30, SEPTEMBER, Year.of(2006)),
-     DateOps.from(30, DECEMBER, Year.of(2006)),
-     DateOps.from(31, DECEMBER, Year.of(2006)),
-    // Year.of(2007
-     DateOps.from(17, FEBRUARY, Year.of(2007)),
-     DateOps.from(25, FEBRUARY, Year.of(2007)),
-     DateOps.from(28, APRIL, Year.of(2007)),
-     DateOps.from(29, APRIL, Year.of(2007)),
-     DateOps.from(29, SEPTEMBER, Year.of(2007)),
-     DateOps.from(30, SEPTEMBER, Year.of(2007)),
-     DateOps.from(29, DECEMBER, Year.of(2007)),
-    // Year.of(2008
-     DateOps.from(2, FEBRUARY, Year.of(2008)),
-     DateOps.from(3, FEBRUARY, Year.of(2008)),
-     DateOps.from(4, MAY, Year.of(2008)),
-     DateOps.from(27, SEPTEMBER, Year.of(2008)),
-     DateOps.from(28, SEPTEMBER, Year.of(2008)),
-    // Year.of(2009
-     DateOps.from(4, JANUARY, Year.of(2009)),
-     DateOps.from(24, JANUARY, Year.of(2009)),
-     DateOps.from(1, FEBRUARY, Year.of(2009)),
-     DateOps.from(31, MAY, Year.of(2009)),
-     DateOps.from(27, SEPTEMBER, Year.of(2009)),
-     DateOps.from(10, OCTOBER, Year.of(2009)),
-    // Year.of(2010
-     DateOps.from(20, FEBRUARY, Year.of(2010)),
-     DateOps.from(21, FEBRUARY, Year.of(2010)),
-     DateOps.from(12, JUNE, Year.of(2010)),
-     DateOps.from(13, JUNE, Year.of(2010)),
-     DateOps.from(19, SEPTEMBER, Year.of(2010)),
-     DateOps.from(25, SEPTEMBER, Year.of(2010)),
-     DateOps.from(26, SEPTEMBER, Year.of(2010)),
-     DateOps.from(9, OCTOBER, Year.of(2010)),
-    // Year.of(2011
-     DateOps.from(30, JANUARY, Year.of(2011)),
-     DateOps.from(12, FEBRUARY, Year.of(2011)),
-     DateOps.from(2, APRIL, Year.of(2011)),
-     DateOps.from(8, OCTOBER, Year.of(2011)),
-     DateOps.from(9, OCTOBER, Year.of(2011)),
-     DateOps.from(31, DECEMBER, Year.of(2011)),
-    // Year.of(2012
-     DateOps.from(21, JANUARY, Year.of(2012)),
-     DateOps.from(29, JANUARY, Year.of(2012)),
-     DateOps.from(31, MARCH, Year.of(2012)),
-     DateOps.from(1, APRIL, Year.of(2012)),
-     DateOps.from(28, APRIL, Year.of(2012)),
-     DateOps.from(29, SEPTEMBER, Year.of(2012)),
-    // Year.of(2013
-     DateOps.from(5,JANUARY,Year.of(2013)),
-     DateOps.from(6,JANUARY,Year.of(2013)),
-     DateOps.from(16,FEBRUARY,Year.of(2013)),
-     DateOps.from(17,FEBRUARY,Year.of(2013)),
-     DateOps.from(7,APRIL,Year.of(2013)),
-     DateOps.from(27,APRIL,Year.of(2013)),
-     DateOps.from(28,APRIL,Year.of(2013)),
-     DateOps.from(8,JUNE,Year.of(2013)),
-     DateOps.from(9,JUNE,Year.of(2013)),
-     DateOps.from(22,SEPTEMBER,Year.of(2013)),
-     DateOps.from(29,SEPTEMBER,Year.of(2013)),
-     DateOps.from(12,OCTOBER,Year.of(2013)),
-    // Year.of(2014
-     DateOps.from(26,JANUARY,Year.of(2014)),
-     DateOps.from(8,FEBRUARY,Year.of(2014)),
-     DateOps.from(4,MAY,Year.of(2014)),
-     DateOps.from(28,SEPTEMBER,Year.of(2014)),
-     DateOps.from(11,OCTOBER,Year.of(2014)),
-    // Year.of(2015
-     DateOps.from(4,JANUARY,Year.of(2015)),
-     DateOps.from(15,FEBRUARY,Year.of(2015)),
-     DateOps.from(28,FEBRUARY,Year.of(2015)),
-     DateOps.from(6,SEPTEMBER,Year.of(2015)),
-     DateOps.from(10,OCTOBER,Year.of(2015)),
-    // Year.of(2016
-     DateOps.from(6,FEBRUARY,Year.of(2016)),
-     DateOps.from(14,FEBRUARY,Year.of(2016)),
-     DateOps.from(12,JUNE,Year.of(2016)),
-     DateOps.from(18,SEPTEMBER,Year.of(2016)),
-     DateOps.from(8,OCTOBER,Year.of(2016)),
-     DateOps.from(9,OCTOBER,Year.of(2016)),
-    // Year.of(2017
-     DateOps.from(22,JANUARY,Year.of(2017)),
-     DateOps.from(4,FEBRUARY,Year.of(2017)),
-     DateOps.from(1,APRIL,Year.of(2017)),
-     DateOps.from(27,MAY,Year.of(2017)),
-     DateOps.from(30,SEPTEMBER,Year.of(2017))
-  )
 
 }
 
-final case class China[D: DateOps](market: market = SSE) extends WeekendSatSun[D] with BusinessCalendar[D]  {
+final case class China[D: DateOps](market: market = SSE) extends WeekendSatSun[D] with BusinessCalendar[D] {
+
+  private val workingWeekends = List(
+    DateOps.from(5, FEBRUARY, Year.of(2005)),
+    DateOps.from(6, FEBRUARY, Year.of(2005)),
+    DateOps.from(30, APRIL, Year.of(2005)),
+    DateOps.from(8, MAY, Year.of(2005)),
+    DateOps.from(8, OCTOBER, Year.of(2005)),
+    DateOps.from(9, OCTOBER, Year.of(2005)),
+    DateOps.from(31, DECEMBER, Year.of(2005)),
+    //Year.of(2006
+    DateOps.from(28, JANUARY, Year.of(2006)),
+    DateOps.from(29, APRIL, Year.of(2006)),
+    DateOps.from(30, APRIL, Year.of(2006)),
+    DateOps.from(30, SEPTEMBER, Year.of(2006)),
+    DateOps.from(30, DECEMBER, Year.of(2006)),
+    DateOps.from(31, DECEMBER, Year.of(2006)),
+    // Year.of(2007
+    DateOps.from(17, FEBRUARY, Year.of(2007)),
+    DateOps.from(25, FEBRUARY, Year.of(2007)),
+    DateOps.from(28, APRIL, Year.of(2007)),
+    DateOps.from(29, APRIL, Year.of(2007)),
+    DateOps.from(29, SEPTEMBER, Year.of(2007)),
+    DateOps.from(30, SEPTEMBER, Year.of(2007)),
+    DateOps.from(29, DECEMBER, Year.of(2007)),
+    // Year.of(2008
+    DateOps.from(2, FEBRUARY, Year.of(2008)),
+    DateOps.from(3, FEBRUARY, Year.of(2008)),
+    DateOps.from(4, MAY, Year.of(2008)),
+    DateOps.from(27, SEPTEMBER, Year.of(2008)),
+    DateOps.from(28, SEPTEMBER, Year.of(2008)),
+    // Year.of(2009
+    DateOps.from(4, JANUARY, Year.of(2009)),
+    DateOps.from(24, JANUARY, Year.of(2009)),
+    DateOps.from(1, FEBRUARY, Year.of(2009)),
+    DateOps.from(31, MAY, Year.of(2009)),
+    DateOps.from(27, SEPTEMBER, Year.of(2009)),
+    DateOps.from(10, OCTOBER, Year.of(2009)),
+    // Year.of(2010
+    DateOps.from(20, FEBRUARY, Year.of(2010)),
+    DateOps.from(21, FEBRUARY, Year.of(2010)),
+    DateOps.from(12, JUNE, Year.of(2010)),
+    DateOps.from(13, JUNE, Year.of(2010)),
+    DateOps.from(19, SEPTEMBER, Year.of(2010)),
+    DateOps.from(25, SEPTEMBER, Year.of(2010)),
+    DateOps.from(26, SEPTEMBER, Year.of(2010)),
+    DateOps.from(9, OCTOBER, Year.of(2010)),
+    // Year.of(2011
+    DateOps.from(30, JANUARY, Year.of(2011)),
+    DateOps.from(12, FEBRUARY, Year.of(2011)),
+    DateOps.from(2, APRIL, Year.of(2011)),
+    DateOps.from(8, OCTOBER, Year.of(2011)),
+    DateOps.from(9, OCTOBER, Year.of(2011)),
+    DateOps.from(31, DECEMBER, Year.of(2011)),
+    // Year.of(2012
+    DateOps.from(21, JANUARY, Year.of(2012)),
+    DateOps.from(29, JANUARY, Year.of(2012)),
+    DateOps.from(31, MARCH, Year.of(2012)),
+    DateOps.from(1, APRIL, Year.of(2012)),
+    DateOps.from(28, APRIL, Year.of(2012)),
+    DateOps.from(29, SEPTEMBER, Year.of(2012)),
+    // Year.of(2013
+    DateOps.from(5, JANUARY, Year.of(2013)),
+    DateOps.from(6, JANUARY, Year.of(2013)),
+    DateOps.from(16, FEBRUARY, Year.of(2013)),
+    DateOps.from(17, FEBRUARY, Year.of(2013)),
+    DateOps.from(7, APRIL, Year.of(2013)),
+    DateOps.from(27, APRIL, Year.of(2013)),
+    DateOps.from(28, APRIL, Year.of(2013)),
+    DateOps.from(8, JUNE, Year.of(2013)),
+    DateOps.from(9, JUNE, Year.of(2013)),
+    DateOps.from(22, SEPTEMBER, Year.of(2013)),
+    DateOps.from(29, SEPTEMBER, Year.of(2013)),
+    DateOps.from(12, OCTOBER, Year.of(2013)),
+    // Year.of(2014
+    DateOps.from(26, JANUARY, Year.of(2014)),
+    DateOps.from(8, FEBRUARY, Year.of(2014)),
+    DateOps.from(4, MAY, Year.of(2014)),
+    DateOps.from(28, SEPTEMBER, Year.of(2014)),
+    DateOps.from(11, OCTOBER, Year.of(2014)),
+    // Year.of(2015
+    DateOps.from(4, JANUARY, Year.of(2015)),
+    DateOps.from(15, FEBRUARY, Year.of(2015)),
+    DateOps.from(28, FEBRUARY, Year.of(2015)),
+    DateOps.from(6, SEPTEMBER, Year.of(2015)),
+    DateOps.from(10, OCTOBER, Year.of(2015)),
+    // Year.of(2016
+    DateOps.from(6, FEBRUARY, Year.of(2016)),
+    DateOps.from(14, FEBRUARY, Year.of(2016)),
+    DateOps.from(12, JUNE, Year.of(2016)),
+    DateOps.from(18, SEPTEMBER, Year.of(2016)),
+    DateOps.from(8, OCTOBER, Year.of(2016)),
+    DateOps.from(9, OCTOBER, Year.of(2016)),
+    // Year.of(2017
+    DateOps.from(22, JANUARY, Year.of(2017)),
+    DateOps.from(4, FEBRUARY, Year.of(2017)),
+    DateOps.from(1, APRIL, Year.of(2017)),
+    DateOps.from(27, MAY, Year.of(2017)),
+    DateOps.from(30, SEPTEMBER, Year.of(2017))
+  )
+
   override val toString: String = market match {
     case SSE => "Shanghai stock exchange"
     case IB => "China inter bank market"
   }
 
-  private def considerBusinessDaySSE(date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isNewYear,
-      isChineseNewYear, isChingming, isLaborDay, isTuenNg,
-      ismidAutumn, isNationalDay, isAntiJapanAnniversory).exists(_.apply(date))
+  private val SSEHolidays =
+    List[D => Boolean](
+      isWeekend,
+      isChinaNewYear, // not the Chinese New year, but New Year for China
+      isChineseNewYear,
+      isChingming,
+      isLaborDay,
+      isTuenNg,
+      ismidAutumn,
+      isNationalDay,
+      isAntiJapanAnniversory)
 
-  }
-  private def considerBusinessDayIB(date: D): Boolean = ???
-    //workingWeekends.contains[D](date)
+
 
 
   override def considerBusinessDay(date: D): Boolean = market match {
-    case SSE => considerBusinessDaySSE(date)
-    case IB => considerBusinessDayIB(date)
+    case SSE => !SSEHolidays.exists(f => f(date))
+    case IB => !SSEHolidays.exists(f => f(date)) || workingWeekends.contains(date)
   }
 
 
-  private def isNewYear(date: D) = {
+  private def isChinaNewYear(date: D) = {
     val (y, m, dd) = date.YMD
     (dd == 1 && m == JANUARY) ||
       (y === 2005 && dd == 3 && m == JANUARY) ||

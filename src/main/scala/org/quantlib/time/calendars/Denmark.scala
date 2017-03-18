@@ -11,28 +11,22 @@ final case class Denmark[D: DateOps]() extends WeekendSatSun[D] with BusinessCal
 
   import BusinessCalendar.InternationalHolidays._
 
-  private def isMaundayThursday(date: D): Boolean = {
-    date.doy == Western.easterMonday(date.year) - 4
-  }
+  private def isConstitutionDay(date: D): Boolean = date.dom == 5 && date.inJune
 
-  private def isGeneralPrayerDay(date: D): Boolean = {
-    date.doy == Western.easterMonday(date.year) + 25
-  }
+  private val holidays =
+    List[D => Boolean](
+      isWeekend,
+      isNewYear,
+      Western.isGoodFriday,
+      Western.isEasterMonday,
+      Western.isHolyThursday,
+      Western.isGeneralPrayerDay,
+      Western.isAscension,
+      Western.isWhitMonday,
+      isConstitutionDay,
+      isBoxingDay,
+      isChristmas)
 
+  override def considerBusinessDay(date: D): Boolean = !holidays.exists(_.apply(date))
 
-  private def isConstitutionDay(date: D): Boolean = {
-    val dom = date.dom
-    dom == 5 && inJune(date)
-  }
-
-  override def considerBusinessDay(date: D): Boolean = {
-    !List[D => Boolean](isWeekend
-      , isNewYear, Western.isGoodFriday
-      , Western.isEasterMonday
-      , isMaundayThursday, isGeneralPrayerDay
-      , Western.isAscension
-      , Western.isWhitMonday, isConstitutionDay
-      , isBoxingDay
-      , isChristmas).exists(_.apply(date))
-  }
 }

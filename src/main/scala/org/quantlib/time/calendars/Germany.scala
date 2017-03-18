@@ -30,7 +30,7 @@ object Germany {
 
 }
 
-final case class Germany[D:DateOps](market: Market = FrankfurtStockExchange) extends WeekendSatSun[D] with BusinessCalendar[D]  {
+final case class Germany[D: DateOps](market: Market = FrankfurtStockExchange) extends WeekendSatSun[D] with BusinessCalendar[D] {
 
   override val toString: String = market match {
     case FrankfurtStockExchange => "Frankfurt stock exchange"
@@ -40,35 +40,33 @@ final case class Germany[D:DateOps](market: Market = FrankfurtStockExchange) ext
     case Settlement => "German settlement"
   }
 
-  private def isNationalDay(date: D): Boolean = {
-    date.dom == 3 && inOctober(date)
-  }
+  private def isNationalDay(date: D): Boolean = date.dom == 3 && date.inOctober
 
-  private def isLabourDay(date: D): Boolean = {
-    date.dom == 1 && inMay(date)
-  }
-  private def SettlementBusinessDays(date: D): Boolean = {
-    !List[D => Boolean](isWeekend,
-      isNewYear, Western.isGoodFriday,
-      Western.isEasterMonday, Western.isAscension,
-      Western.isWhitMonday, Western.isCorpusChristi, isNationalDay,
-      isLabourDay, isChristmasEve, isChristmas,
-      isBoxingDay, isNewYearEve).exists(_.apply(date))
-  }
 
-  private def FSEBusinessDays(date: D): Boolean = {
-    !List[D => Boolean](isWeekend,
-      isNewYear, Western.isGoodFriday,
-      Western.isEasterMonday, isLabourDay,
-      isChristmasEve, isChristmas, isBoxingDay, isNewYearEve).exists(_.apply(date))
+  private val FSBHolidays =
+    List[D => Boolean](
+      isWeekend,
+      isNewYear,
+      Western.isGoodFriday,
+      Western.isEasterMonday,
+      isLabourDay,
+      isChristmasEve,
+      isChristmas,
+      isBoxingDay,
+      isNewYearEve)
 
-  }
+  private val settlementHolidays =
+    FSBHolidays ++ List[D => Boolean](
+      Western.isAscension,
+      Western.isWhitMonday,
+      Western.isCorpusChristi,
+      isNationalDay)
 
   override def considerBusinessDay(date: D): Boolean = market match {
-    case FrankfurtStockExchange => FSEBusinessDays(date)
-    case Xetra => FSEBusinessDays(date)
-    case Eurex => FSEBusinessDays(date)
-    case Euwax => FSEBusinessDays(date)
-    case Settlement => SettlementBusinessDays(date)
+    case FrankfurtStockExchange => !FSBHolidays.exists(f => f(date))
+    case Xetra => !FSBHolidays.exists(f => f(date))
+    case Eurex => !FSBHolidays.exists(f => f(date))
+    case Euwax => !FSBHolidays.exists(f => f(date))
+    case Settlement => !settlementHolidays.exists(f => f(date))
   }
 }

@@ -1,41 +1,44 @@
 package org.quantlib.time.calendars
 
-import java.time.DayOfWeek
+
 
 import org.quantlib.time.calendars.Brazil.Market
 import org.quantlib.time.calendars.Brazil.Market._
-import org.quantlib.time.calendars.BusinessCalendar.InternationalHolidays._
-import org.quantlib.time.calendars.BusinessCalendar.Western
 import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 
 
-final case class Brazil[D: DateOps](market: Market = Settlement) extends WeekendSatSun[D] with BusinessCalendar[D]  {
+final case class Brazil[D: DateOps](market: Market = Settlement) extends WeekendSatSun[D] with BusinessCalendar[D] {
 
   import BusinessCalendar.InternationalHolidays._
   import BusinessCalendar.Western
 
-  private def considerBusinessDaySettlement(date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isNewYear, isTiradentesDay,
-      isLaborDay, isIndependenceDay,
-      isNossaSraAparecidaDay, isAllSoulsDay,
-      isRepublicDay, isChristmas, isPassionofChrist,
-      isCarnival, Western.isCorpusChristi).exists(_.apply(date))
-  }
+  private val settlmentHolidays =
+    List[D => Boolean](
+      isWeekend,
+      isNewYear,
+      isTiradentesDay,
+      isLaborDay,
+      isIndependenceDay,
+      isNossaSraAparecidaDay,
+      isAllSoulsDay,
+      isRepublicDay,
+      isChristmas,
+      Western.isPassionofChrist,
+      Western.isCarnival,
+      Western.isCorpusChristi)
 
-  private def considerBusinessDayExchanage(date: D): Boolean = {
-    !List[D => Boolean](isWeekend, isNewYear, isSaoPauloCityDay
-      , isTiradentesDay
-      , isLaborDay, isIndependenceDay
-      , isRevolutionDay
-      , isNossaSraAparecidaDay, isAllSoulsDay, isBlackConsciousnessDay
-      , isRepublicDay, isChristmas, isPassionofChrist
-      , isCarnival, Western.isCorpusChristi, isLastBusinessDay).exists(_.apply(date))
-  }
+  private val exchangeHolidays =
+    settlmentHolidays ++ List[D => Boolean](
+      isSaoPauloCityDay,
+      isRevolutionDay,
+      isBlackConsciousnessDay,
+      isLastBusinessDay)
+
 
   override def considerBusinessDay(date: D): Boolean = market match {
-    case Settlement => considerBusinessDaySettlement(date)
-    case Exchange => considerBusinessDayExchanage(date)
+    case Settlement => !settlmentHolidays.exists(f => f(date))
+    case Exchange => !exchangeHolidays.exists(f => f(date))
   }
 
   override val toString: String = market match {
@@ -43,40 +46,30 @@ final case class Brazil[D: DateOps](market: Market = Settlement) extends Weekend
     case Exchange => "BOVESPA"
   }
 
-  private def isTiradentesDay(date: D): Boolean = date.dom == 21 && inApril(date)
+  private def isTiradentesDay(date: D): Boolean = date.dom == 21 && date.inApril
 
-  private def isLaborDay(date: D): Boolean = date.dom == 1 && inMay(date)
+  private def isLaborDay(date: D): Boolean = date.dom == 1 && date.inMay
 
-  private def isRevolutionDay(date: D): Boolean = date.dom == 9 && inJuly(date)
+  private def isRevolutionDay(date: D): Boolean = date.dom == 9 && date.inJuly
 
-  private def isIndependenceDay(date: D): Boolean = date.dom == 7 && inSeptember(date)
+  private def isIndependenceDay(date: D): Boolean = date.dom == 7 && date.inSeptember
 
-  private def isNossaSraAparecidaDay(date: D): Boolean = date.dom == 12 && inOctober(date)
+  private def isNossaSraAparecidaDay(date: D): Boolean = date.dom == 12 && date.inOctober
 
-  private def isAllSoulsDay(date: D): Boolean = date.dom == 2 && inNovember(date)
+  private def isAllSoulsDay(date: D): Boolean = date.dom == 2 && date.inNovember
 
-  private def isRepublicDay(date: D): Boolean = date.dom == 15 && inNovember(date)
+  private def isRepublicDay(date: D): Boolean = date.dom == 15 && date.inNovember
 
-  private def isBlackConsciousnessDay(date: D): Boolean = {
-    date.dom == 20 && inNovember(date) && date.year >= 2007
-  }
+  private def isBlackConsciousnessDay(date: D): Boolean = date.dom == 20 && date.inNovember && date.year >= 2007
 
-  private def isSaoPauloCityDay(date: D): Boolean = date.dom == 25 && inJanuary(date)
+  private def isSaoPauloCityDay(date: D): Boolean = date.dom == 25 && date.inJanuary
 
   private def isLastBusinessDay(date: D): Boolean = {
     val dom = date.dom
-    inDecember(date) && (dom == 31) || (dom >= 29 && date.dow == DayOfWeek.FRIDAY)
+    date.inDecember && (dom == 31) || (dom >= 29 && date.dow.isFriday)
   }
 
-  private def isPassionofChrist(date: D): Boolean = {
-    date.doy == Western.easterMonday(date.year) - 3
-  }
 
-  private def isCarnival(date: D): Boolean = {
-    val em = Western.easterMonday(date.year)
-    val doy = date.doy
-    (doy == em - 49) || (doy == em - 48)
-  }
 
 }
 

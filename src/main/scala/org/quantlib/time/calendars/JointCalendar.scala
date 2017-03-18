@@ -24,7 +24,6 @@ object JointCalendar {
     // A date is a business day  for the joint calendar if it is a business day for any of the given calendars
 
   }
-
 }
 
 final case class JointCalendar[D: DateOps](calendars: List[BusinessCalendar[D]],

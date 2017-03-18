@@ -1,5 +1,6 @@
 package org.quantlib.time
 
+import org.quantlib.time.Period.PeriodOrder
 import org.quantlib.time.enums.{Frequency, TimeUnit}
 import org.quantlib.time.enums.Frequency._
 import org.quantlib.time.enums.TimeUnit._
@@ -90,6 +91,10 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
 
   def *:(n: Long): Period = *(n)
 
+  def >(other: Period):Boolean = PeriodOrder.>(this,other)
+  def <(other: Period):Boolean = PeriodOrder.<(this,other)
+  def >=(other: Period):Boolean = ! <(other)
+  def <=(other: Period):Boolean = ! >(other)
 
   def /(n: Long): Period = {
     require(n != 0, "cannot be divided by zero")

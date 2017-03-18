@@ -21,9 +21,9 @@ abstract class StandardFormat[D] {
 
   def toDate(code: String, refDate: D): Option[D]
 
-  def nextCode(code: String, mainCycle: Boolean, refDate: D): Option[String]
+  def nextCode(code: String, mainCycle: Boolean, refDate: D): String
 
-  def nextCode(date: D,mainCycle: Boolean): Option[String]
+  def nextCode(date: D,mainCycle: Boolean): String
 
   def nextDate(code: String, mainCycle: Boolean, refDate: D): Option[D]
 

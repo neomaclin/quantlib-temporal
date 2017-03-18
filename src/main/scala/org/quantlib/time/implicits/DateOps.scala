@@ -128,8 +128,7 @@ object DateOps {
 
     def <=(other: Month): Boolean = ! >(other)
     def >=(other: Month): Boolean = ! <(other)
-
-   // def ===(other: Int): Boolean = Month.getValue == number
+    
   }
 
   implicit class DateOpsClass[D: DateOps](val date: D)  {
@@ -197,6 +196,32 @@ object DateOps {
     def isSameYearOf(other: D): Boolean = impl.sameYear(date,other)
 
     def isSameMonthOf(other: D): Boolean = impl.sameMonth(date, other)
+
+    import java.time.Month._
+    def inDecember: Boolean = date.month == DECEMBER
+
+    def inJanuary: Boolean = date.month == JANUARY
+
+    def inFebruary: Boolean = date.month == FEBRUARY
+
+    def inMarch: Boolean = date.month == MARCH
+
+    def inApril: Boolean = date.month == APRIL
+
+    def inMay: Boolean = date.month == MAY
+
+    def inJune: Boolean = date.month == JUNE
+
+    def inJuly: Boolean = date.month == JULY
+
+    def inAugust: Boolean = date.month == AUGUST
+
+    def inSeptember: Boolean = date.month == SEPTEMBER
+
+    def inOctober: Boolean = date.month == OCTOBER
+
+    def inNovember: Boolean = date.month == NOVEMBER
+
   }
 
   implicit class WeekdayClass(val dayOfWeek: DayOfWeek) extends AnyVal {
@@ -210,6 +235,21 @@ object DateOps {
     def -:(other: Int): Int = other - dayOfWeek.getValue
 
     def +:(other: Int): Int = dayOfWeek.getValue + other
+
+    def isMonday: Boolean  = dayOfWeek == MONDAY
+
+    def isTuesDay: Boolean = dayOfWeek == TUESDAY
+
+    def isWednesday: Boolean  = dayOfWeek == WEDNESDAY
+
+    def isThursday: Boolean = dayOfWeek == THURSDAY
+
+    def isFriday: Boolean  = dayOfWeek == FRIDAY
+
+    def isSaturday: Boolean = dayOfWeek == SATURDAY
+
+    def isSunday: Boolean  = dayOfWeek == SUNDAY
+
 
     def asLongWeekDay: String = dayOfWeek match {
       case SUNDAY => "Sunday"
