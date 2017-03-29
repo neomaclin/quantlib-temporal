@@ -11,7 +11,6 @@ final case class AdHodCalendar[D: DateOps](baseCalendar: Option[BusinessCalendar
                                            holidays: List[D]
                                           ) extends BusinessCalendar[D] with Modification[D] {
 
-
   override val toString: String = baseCalendar.map {
     calendar => s"$calendar :with additional holidays ${holidays.mkString(",")})"
   }.getOrElse{

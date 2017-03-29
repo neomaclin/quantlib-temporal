@@ -8,12 +8,6 @@ import org.scalatest._
 class BusinessCalendarSpec extends FlatSpec with Matchers {
 
 
-
-  "TARGET Celendar" should "pass all test" in {
-    assert(true)
-  }
-
-
   "ModifiedCalendars Celendar" should "pass all test" in {
     assert(true)
   }

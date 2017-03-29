@@ -3,7 +3,9 @@ package org.quantlib.time.standards
 import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 /** European Central Bank reserve maintenance dates */
-object ECB {
+
+
+final case class ECB() extends StandardFormat {
   private val knownDates = List(
     38371, 38391, 38420, 38455, 38483, 38511, 38546, 38574, 38602, 38637, 38665, 38692 // 2005
     , 38735, 38756, 38784, 38819, 38847, 38883, 38910, 38938, 38966, 39001, 39029, 39064 // 2006
@@ -27,15 +29,11 @@ object ECB {
   private val codeShort = "hmzuHMZU".toList
   private val codeLong = "fghjkmnquvxzFGHJKMNQUVXZ".toList
 
-}
-
-final case class ECB[D: DateOps](dates: List[Int]) extends StandardFormat[D] {
-
   import ECB._
 
-  override def confirm(date: D, mainCycle: Boolean): Boolean = nextDate(date - 1, false).contains(date)
+  override def confirm[D: DateOps](date: D, mainCycle: Boolean): Boolean = nextDate(date - 1, false).contains(date)
 
-  override def confirm(code: String, mainCycle: Boolean): Boolean = {
+  override def confirm[D: DateOps](code: String, mainCycle: Boolean): Boolean = {
     if (code.length != 5) {
       false
     } else {
@@ -55,19 +53,19 @@ final case class ECB[D: DateOps](dates: List[Int]) extends StandardFormat[D] {
     }
   }
 
-  override def addDate(date: D, mainCycle: Boolean): StandardFormat[D] = ???
+  override def addDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = ???
 
-  override def removeDate(date: D, mainCycle: Boolean): StandardFormat[D] = ???
+  override def removeDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = ???
 
-  override def nextDate(code: String, mainCycle: Boolean, refDate: D): Option[D] = ???
+  override def nextDate[D: DateOps](code: String, mainCycle: Boolean, refDate: D): Option[D] = ???
 
-  override def nextDate(date: D, mainCycle: Boolean): Option[D] = ???
+  override def nextDate[D: DateOps](date: D, mainCycle: Boolean): Option[D] = ???
 
-  override def toCode(date: D): String = ???
+  override def toCode[D: DateOps](date: D): String = ???
 
-  override def toDate(code: String, refDate: D): Option[D] = ???
+  override def toDate[D: DateOps](code: String, refDate: D): Option[D] = ???
 
-  override def nextCode(code: String, mainCycle: Boolean, refDate: D): String = ???
+  override def nextCode[D: DateOps](code: String, mainCycle: Boolean, refDate: D): String = ???
 
-  override def nextCode(date: D, mainCycle: Boolean): String = ???
+  override def nextCode[D: DateOps](date: D, mainCycle: Boolean): String = ???
 }

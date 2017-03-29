@@ -23,4 +23,6 @@ object DateGenerationRule {
 
   case object CDS extends DateGenerationRule
 
+  case object CDS2015 extends DateGenerationRule
+
 }

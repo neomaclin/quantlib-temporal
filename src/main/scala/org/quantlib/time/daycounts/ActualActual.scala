@@ -11,6 +11,7 @@ import org.quantlib.time.enums.TimeUnit._
 
 import scala.annotation.tailrec
 
+
 //! Actual/Actual day count
 /*! The day count can be calculated according to:
 

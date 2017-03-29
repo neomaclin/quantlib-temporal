@@ -5,19 +5,14 @@ import java.time._
 import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 
-object IMM{
-
+/** Main cycle of the International %Money Market (a.k.a. %IMM) months */
+case object IMM extends StandardFormat {
   private val MonthCodes = "FGHJKMNQUVXZ"
   private val Months = MonthCodes.toList.map(_.toString)
-  private val codeRegex = s"""([$MonthCodes])(\d)""".r
-  private val mainCycleRegex = """([HMZU])(\d)""".r
+  private val codeRegex = s"""([$MonthCodes])([0-9])""".r
+  private val mainCycleRegex = """([HMZU])([0-9])""".r
 
-}
-/** Main cycle of the International %Money Market (a.k.a. %IMM) months */
-final case class IMM[D: DateOps]() extends StandardFormat[D] {
-  import IMM._
-
-  def confirm(date: D, mainCycle: Boolean): Boolean = {
+  def confirm[D: DateOps](date: D, mainCycle: Boolean): Boolean = {
     date.dow match {
       case DayOfWeek.WEDNESDAY =>
         date.dom match {
@@ -33,17 +28,18 @@ final case class IMM[D: DateOps]() extends StandardFormat[D] {
     }
   }
 
-  def confirm(code: String, mainCycle: Boolean): Boolean = {
+  def confirm[D: DateOps](code: String, mainCycle: Boolean): Boolean = {
     val matching = if (mainCycle) mainCycleRegex else codeRegex
     code.toUpperCase.matches(matching.regex)
   }
 
-  def toCode(date: D): String = {
+  def toCode[D: DateOps](date: D): String = {
+     require(confirm(date, mainCycle = false), s"$date is not an valid IMM date")
       val (y,m,d) = date.YMD
-      if (!confirm(date, mainCycle = false)) "" else (m.getValue - 1 + (y.getValue % 10)).toString
+      s"${Months(m.getValue - 1)}${Math.abs(y.getValue % 10)}"
     }
 
-  def toDate(immCode: String, refDate: D): Option[D] = {
+  def toDate[D: DateOps](immCode: String, refDate: D): Option[D] = {
       if (confirm(immCode, mainCycle = false))
         immCode.toUpperCase match {
           case codeRegex(c, y) =>
@@ -61,39 +57,37 @@ final case class IMM[D: DateOps]() extends StandardFormat[D] {
     }
 
 
-  def nextDate(date: D, mainCycle: Boolean = true): Option[D] = ???
-//  {
-//
-//
-//      val (refYear, refYearMonth, refDay) = date.YMD
-//
-//      val offset = if (mainCycle) 3 else 1
-//      val skipping = offset - (refYearMonth % offset)
-//
-//      val (year, month) = if (skipping != offset || refDay > 21) {
-//        val nextCycleMonth = refYearMonth + skipping
-//        if (nextCycleMonth <= 12) (refYear, nextCycleMonth) else (refYear + 1, nextCycleMonth - 11)
-//      } else {
-//        (refYear, refYearMonth)
-//      }
-//
-//      val result = nthWeekday(3, DayOfWeek.WEDNESDAY, month, year)
-//      if (result <= date) nextDate(D.of(year, month, 22), mainCycle) else result
-//    }
+  def nextDate[D: DateOps](date: D, mainCycle: Boolean = true): Option[D] = {
 
-  def nextDate(code: String, mainCycle: Boolean, refDate: D): Option[D] = {
+      val (refYear, refYearMonth, refDay) = date.YMD
+
+      val offset = if (mainCycle) 3 else 1
+      val skipping = offset - (refYearMonth.getValue % offset)
+
+      val (year, month) = if (skipping != offset || refDay > 21) {
+        val nextCycleMonth = refYearMonth.getValue + skipping
+        if (nextCycleMonth <= 12) (refYear, Month.of(nextCycleMonth)) else (refYear + 1, Month.of(nextCycleMonth - 11))
+      } else {
+        (refYear, refYearMonth)
+      }
+
+      val result = DateOps.nthWeekday(3, DayOfWeek.WEDNESDAY, month, year)
+      if (result <= date) nextDate(DateOps.from(22, month, year), mainCycle) else Some(result)
+    }
+
+  def nextDate[D: DateOps](code: String, mainCycle: Boolean, refDate: D): Option[D] = {
      toDate(code, refDate).flatMap{ immDate => nextDate(immDate + 1, mainCycle) }
   }
 
-  def nextCode(date: D, mainCycle: Boolean): String = nextDate(date, mainCycle) map toCode getOrElse ""
+  def nextCode[D: DateOps](date: D, mainCycle: Boolean): String = nextDate(date, mainCycle) map toCode[D] getOrElse ""
 
-  def nextCode(code: String, mainCycle: Boolean, refDate: D): String = {
-    nextDate(code, mainCycle, refDate) map toCode getOrElse ""
+  def nextCode[D: DateOps](code: String, mainCycle: Boolean, refDate: D): String = {
+    nextDate(code, mainCycle, refDate) map toCode[D] getOrElse ""
   }
 
-  override def addDate(date: D, mainCycle: Boolean): StandardFormat[D] = this
+  override def addDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat  = this
 
-  override def removeDate(date: D, mainCycle: Boolean): StandardFormat[D] = this
+  override def removeDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = this
 
 
 }

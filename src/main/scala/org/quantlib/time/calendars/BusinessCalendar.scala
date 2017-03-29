@@ -22,10 +22,8 @@ trait BusinessCalendar[D] {
 }
 
 abstract class WeekendSatSun[D: DateOps] {
-  def isWeekend(date: D): Boolean = {
-    val result = date.dow.isSaturday || date.dow.isSunday
-    result
-  }
+  def isWeekend(date: D): Boolean = date.dow.isSaturday || date.dow.isSunday
+
 }
 
 abstract class WeekendThursFri[D: DateOps] {
@@ -33,7 +31,7 @@ abstract class WeekendThursFri[D: DateOps] {
 }
 
 abstract class WeekendFriSat[D: DateOps] {
-  def isWeekend(date: D): Boolean =  date.dow.isFriday || date.dow.isSaturday
+  def isWeekend(date: D): Boolean = date.dow.isFriday || date.dow.isSaturday
 }
 
 trait Modification[D] {
@@ -44,25 +42,50 @@ trait Modification[D] {
 
 }
 
+
 object BusinessCalendar {
+
+  implicit class BusinessCalendarExt[D: DateOps](val inCalendar: BusinessCalendar[D]) {
+
+    def holidays(from: D, to: D, includeWeekEnd: Boolean = false) = {
+      BusinessCalendar.holidays(inCalendar, from, to, includeWeekEnd)
+    }
+
+    def adjust(date: D, convention: BusinessDayConvention = Following): D = {
+      BusinessCalendar.adjust(inCalendar, date, convention)
+    }
+
+    def advance(date: D, period: Period,
+                convention: BusinessDayConvention = Following,
+                toEndOfMonth: Boolean = false): D = {
+      BusinessCalendar.advance(inCalendar, date, period, convention, toEndOfMonth)
+    }
+
+    def isEndOfMonth(date: D): Boolean = BusinessCalendar.isEndOfMonth(inCalendar, date)
+
+    def endOfMonth(date: D): D = BusinessCalendar.endOfMonth(inCalendar,date)
+  }
+
 
   def holidays[D: DateOps](inCalendar: BusinessCalendar[D], from: D, to: D,
                            includeWeekEnd: Boolean = false): List[D] = {
-    def isHoliday(date: D) = inCalendar.considerHoliday(date) && (includeWeekEnd || ! inCalendar.isWeekend(date))
+    def isHoliday(date: D) = inCalendar.considerHoliday(date) && (includeWeekEnd || !inCalendar.isWeekend(date))
 
-    dayRanges(from, to, inCalendar, includeLast = true).filter(isHoliday).toList
+    dayRanges(inCalendar, from, to, includeLast = true).filter(isHoliday).toList
   }
 
-  def businessDaysBetween[D: DateOps](from: D, to: D, inCalendar: BusinessCalendar[D],
+  def businessDaysBetween[D: DateOps](inCalendar: BusinessCalendar[D], from: D, to: D,
                                       includeFirst: Boolean = true, includeLast: Boolean = false): Int = {
-    dayRanges(from, to, inCalendar, includeFirst, includeLast).count(inCalendar.considerBusinessDay)
+    val flow = if (from <= to) 1 else -1
+
+    dayRanges(inCalendar, from, to, includeFirst, includeLast).count(inCalendar.considerBusinessDay) * flow
   }
 
-  def isEndOfMonth[D: DateOps](date: D, inCalendar: BusinessCalendar[D]): Boolean = {
-    date.month != adjust(date + Period(1, Days), inCalendar, Following).month
+  def isEndOfMonth[D: DateOps](inCalendar: BusinessCalendar[D], date: D): Boolean = {
+    date.month != adjust(inCalendar, date + Period(1, Days), Following).month
   }
 
-  def adjust[D: DateOps](date: D, inCalendar: BusinessCalendar[D],
+  def adjust[D: DateOps](inCalendar: BusinessCalendar[D], date: D,
                          convention: BusinessDayConvention = Following): D = {
 
     val nextBusinessDay: D = Stream.from(0).map(n => date + Period(n, Days)).find(inCalendar.considerBusinessDay).get
@@ -80,47 +103,47 @@ object BusinessCalendar {
       case Following =>
         nextBusinessDay
       case ModifiedFollowing =>
-        if (intoNextMonth) adjust(date, inCalendar, Preceding) else nextBusinessDay
+        if (intoNextMonth) adjust(inCalendar, date, Preceding) else nextBusinessDay
       case HalfMonthModifiedFollowing =>
-        if (passedMidMonth || intoNextMonth) adjust(date, inCalendar, Preceding) else nextBusinessDay
+        if (passedMidMonth || intoNextMonth) adjust(inCalendar, date, Preceding) else nextBusinessDay
       case Preceding =>
         priorBusinessDay
       case ModifiedPreceding =>
-        if (intoPrevMonth) adjust(date, inCalendar, Following) else priorBusinessDay
+        if (intoPrevMonth) adjust(inCalendar, date, Following) else priorBusinessDay
     }
   }
 
-  def endOfMonth[D: DateOps](date: D, inCalendar: BusinessCalendar[D]): D = ??? // adjust(date.withDayOfMonth(date.lengthOfMonth), Preceding)
+  def endOfMonth[D: DateOps](inCalendar: BusinessCalendar[D], date: D): D = {
+    adjust(inCalendar, date.endOfMonth, Preceding)
+  }
 
-
-  def advance[D: DateOps](date: D, period: Period, inCalendar: BusinessCalendar[D],
+  def advance[D: DateOps](inCalendar: BusinessCalendar[D], date: D, period: Period,
                           convention: BusinessDayConvention = Following, toEndOfMonth: Boolean = false): D = {
     val Period(n, unit) = period
 
     if (n == 0) {
-      adjust(date, inCalendar, convention)
+      adjust(inCalendar, date, convention)
     } else {
       unit match {
-
-        case TimeUnit.Weeks => adjust(date + period, inCalendar, convention)
+        case TimeUnit.Weeks => adjust(inCalendar, date + period, convention)
         case TimeUnit.Months | TimeUnit.Years =>
           val advancedDate =
             if (unit == TimeUnit.Months) date + Period(n, Months)
             else date + Period(n, Years)
-          if (toEndOfMonth && isEndOfMonth(date, inCalendar)) endOfMonth(advancedDate, inCalendar)
-          else adjust(advancedDate, inCalendar, convention)
+          if (toEndOfMonth && isEndOfMonth(inCalendar, date)) endOfMonth(inCalendar, advancedDate)
+          else adjust(inCalendar, advancedDate, convention)
         case TimeUnit.Days | _ =>
 
           @tailrec
           def forward(i: Long, from: D): D = {
             if (i <= 0) from
-            else forward(i - 1, adjust(date + Period(1, unit), inCalendar, convention))
+            else forward(i - 1, adjust(inCalendar, from + Period(1, unit), convention))
           }
 
           @tailrec
           def backtrack(i: Long, from: D): D = {
             if (i >= 0) from
-            else backtrack(i + 1, adjust(date - Period(1, unit), inCalendar, convention))
+            else backtrack(i + 1, adjust(inCalendar, from - Period(1, unit), convention))
           }
 
           if (n > 0) forward(n, date) else backtrack(n, date)
@@ -129,8 +152,8 @@ object BusinessCalendar {
   }
 
 
-  private def dayRanges[D: DateOps](from: D, to: D,
-                                    inCalendar: BusinessCalendar[D],
+  private def dayRanges[D: DateOps](inCalendar: BusinessCalendar[D],
+                                    from: D, to: D,
                                     includeFirst: Boolean = true,
                                     includeLast: Boolean = false) = {
     val isPositiveFlow = from < to
@@ -141,14 +164,12 @@ object BusinessCalendar {
     val endDate = if (includeLast) to else adjustment(to, -1)
 
     (0 to startDate.to(endDate, Days).toInt).map(adjustment(startDate, _))
-
   }
-
 
 
   object InternationalHolidays {
 
-    
+
     def isNewYearEve[D: DateOps](date: D): Boolean = date.dom == 31 && date.inDecember
 
     def isNewYear[D: DateOps](date: D): Boolean = date.dom == 1 && date.inJanuary
@@ -166,17 +187,17 @@ object BusinessCalendar {
 
     def isNewYearMT[D: DateOps](date: D): Boolean = {
       val dom = date.dom
-      (dom == 1 || dom == 3 && (date.dow.isMonday|| date.dow.isTuesDay)) && date.inJanuary
+      (dom == 1 || dom == 3 && (date.dow.isMonday || date.dow.isTuesDay)) && date.inJanuary
     }
 
     def isDayAfterNewYearMT[D: DateOps](date: D): Boolean = {
       val dom = date.dom
-      (dom == 2 || dom == 4 && (date.dow.isMonday|| date.dow.isTuesDay)) && date.inJanuary
+      (dom == 2 || dom == 4 && (date.dow.isMonday || date.dow.isTuesDay)) && date.inJanuary
     }
 
     def isChristmasMT[D: DateOps](date: D): Boolean = {
       val dom = date.dom
-      (dom == 25 || dom == 27 && (date.dow.isMonday|| date.dow.isTuesDay)) && date.inDecember
+      (dom == 25 || dom == 27 && (date.dow.isMonday || date.dow.isTuesDay)) && date.inDecember
     }
 
     def isBoxingDayMT[D: DateOps](date: D): Boolean = {
@@ -194,11 +215,12 @@ object BusinessCalendar {
 
     def isEpiphany[D: DateOps](date: D): Boolean = date.dom == 6 && date.inJanuary
 
-    def isAllSaintsDay[D: DateOps](date: D): Boolean = date.dom == 1  && date.inNovember
+    def isAllSaintsDay[D: DateOps](date: D): Boolean = date.dom == 1 && date.inNovember
 
     def isStStephenDay[D: DateOps](date: D): Boolean = date.dom == 26 && date.inDecember
 
   }
+
   object Western {
     private val EasterMonday = Seq(
       98, 90, 103, 95, 114, 106, 91, 111, 102, // 1901-1909
@@ -245,7 +267,7 @@ object BusinessCalendar {
 
     def isCorpusChristi[D: DateOps](date: D): Boolean = date.doy == easterMonday(date.year) + 59
 
-    def isHolyThursday[D: DateOps](date: D): Boolean  = date.doy == easterMonday(date.year) - 4
+    def isHolyThursday[D: DateOps](date: D): Boolean = date.doy == easterMonday(date.year) - 4
 
     def isPassionofChrist[D: DateOps](date: D): Boolean = date.doy == easterMonday(date.year) - 3
 
@@ -260,6 +282,7 @@ object BusinessCalendar {
 
 
   }
+
   object Orthodox {
     private val EasterMonday = Array(
       105, 118, 110, 102, 121, 106, 126, 118, 102, // 1901-1909
@@ -296,7 +319,7 @@ object BusinessCalendar {
 
     def easterMonday(year: Year): Int = EasterMonday(year.getValue - 1901)
 
-    def isChristmas[D: DateOps](date: D): Boolean  = {
+    def isChristmas[D: DateOps](date: D): Boolean = {
       val d = date.dom
       (d == 7 || ((d == 8 || d == 9) && date.dow.isMonday)) && date.inJanuary
     }

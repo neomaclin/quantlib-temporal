@@ -1,6 +1,7 @@
 package org.quantlib.time
 
-import org.quantlib.time.Period.PeriodOrder
+import cats.Order
+
 import org.quantlib.time.enums.{Frequency, TimeUnit}
 import org.quantlib.time.enums.Frequency._
 import org.quantlib.time.enums.TimeUnit._
@@ -18,7 +19,7 @@ object Period {
     case _ => (Long.MinValue, Long.MaxValue)
   }
 
-  implicit object PeriodOrder extends Ordering[Period] {
+  implicit object PeriodOrder extends Order[Period] {
 
     def <(p1: Period, p2: Period): Boolean = (p1, p2) match {
       case (Period(0, _), Period(y, _)) => y > 0
@@ -53,7 +54,6 @@ object Period {
 
     }
 
-
     override def compare(x: Period, y: Period): Int = if (<(x, y)) -1 else if (>(x, y)) 1 else 0
   }
 
@@ -83,18 +83,13 @@ final case class Period(length: Long = 0, unit: TimeUnit = Days) {
 
   def unary_- : Period = Period(-length, unit)
 
-  def *(n: Int): Period = Period(length*n, unit)
+  def *(n: Int): Period = Period( length * n, unit)
 
   def *:(n: Int): Period = *(n)
 
   def *(n: Long): Period = Period(length*n, unit)
 
   def *:(n: Long): Period = *(n)
-
-  def >(other: Period):Boolean = PeriodOrder.>(this,other)
-  def <(other: Period):Boolean = PeriodOrder.<(this,other)
-  def >=(other: Period):Boolean = ! <(other)
-  def <=(other: Period):Boolean = ! >(other)
 
   def /(n: Long): Period = {
     require(n != 0, "cannot be divided by zero")

@@ -3,20 +3,22 @@ package org.quantlib.time.implicits
 import java.time.DayOfWeek._
 import java.time._
 
+import cats.Order
 import org.quantlib.time.Period
 import org.quantlib.time.enums.TimeUnit
-import org.quantlib.time.implicits.Date.LocalDateOps
-import org.quantlib.time.implicits.DateTime.LocalDateTimeOps
 
-trait DateOps[D] {
+
+trait DateOps[D] extends Order[D]{
+
+  def now: D
+
+  val MAX: D
+
+  val MIN: D
 
   def from(day: Int, month: Month, year: Year): D
 
   def from(day: Int, month: Month, year: Year, hours: Int, minutes: Int, seconds: Int, nanoSeconds: Int): D
-
-  def MAX_VALUE(date: D): D
-
-  def MII_VALUE(date: D): D
 
   def fromNumber(epochDay: Long): D
 
@@ -34,17 +36,6 @@ trait DateOps[D] {
 
   def HMSN(date: D): (Int, Int, Int, Int)
 
-  def <(date1: D, date2: D): Boolean
-
-  def <=(date1: D, date2: D): Boolean = ! >(date1, date2)
-
-  def >(date1: D, date2: D): Boolean
-
-  def >=(date1: D, date2: D): Boolean = ! <(date1, date2)
-
-  def min(date1: D, date2: D): D
-
-  def max(date1: D, date2: D): D
 
   def +(date: D, days: Int): D
 
@@ -56,58 +47,57 @@ trait DateOps[D] {
 
   def lengthBetween(date1: D, date2: D, timeUnit: TimeUnit): Long
 
-  def nextWeekday(date: D, w: DayOfWeek): D
-
-  def nthWeekdaynth(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): D
+  def nthWeekday(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): D
 
   def firstDayOf(month: Month, year: Year): D
 
   def lastDayOf(month: Month, year: Year): D
 
   def dailyDifference(date1: D, date2: D): Double
-//  def compareTo(date1: D, date2: D): Int
 
   def sameYear(date1: D, date2: D): Boolean
 
   def sameMonth(date1: D, date2: D): Boolean
 
-  def previousWednesday(date: D): D
-
-  //  {
-  //    val w = date.getDayOfWeek
-  //    if (w >= DayOfWeek.THURSDAY) // roll back w-4 days
-  //      date - Period(w - 4 , Days)
-  //    else // roll forward 4-w days and back one week
-  //      date + Period(-(w + 3), Days)
-  //  }
-
-  def nextWednesday(date: D): D //= previousWednesday(date.plusDays(7))
-
-
 }
 
+object DateOps extends scala.AnyRef with cats.syntax.AllSyntax with cats.instances.AllInstances{
 
-object DateOps {
- // implicit val localDateEv = LocalDateOps
- // implicit val localDateTimeEv = LocalDateTimeOps
-  def from[D: DateOps](day: Int, month: Month, year: Year): D ={
-    implicitly[DateOps[D]].from(day,month,year)
-  }
+  def from[D: DateOps](day: Int, month: Month, year: Year): D = implicitly[DateOps[D]].from(day, month, year)
+
+  def now[D: DateOps]: D = implicitly[DateOps[D]].now
+
+  def MAX[D: DateOps]: D = implicitly[DateOps[D]].MAX
+
+  def MIN[D: DateOps]: D = implicitly[DateOps[D]].MIN
 
   def from[D: DateOps](day: Int, month: Month, year: Year,
-                       hours: Int, minutes: Int, seconds: Int, nanoSeconds: Int): D ={
-    implicitly[DateOps[D]].from(day,month,year,hours,minutes,seconds,nanoSeconds)
+                       hours: Int, minutes: Int, seconds: Int, nanoSeconds: Int): D = {
+    implicitly[DateOps[D]].from(day, month, year, hours, minutes, seconds, nanoSeconds)
   }
 
+  def nthWeekday[D: DateOps](nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): D = {
+    implicitly[DateOps[D]].nthWeekday(nth, dayOfWeek, month, year)
+  }
+
+  def lastDayOf[D: DateOps](month: Month, year: Year): D = implicitly[DateOps[D]].lastDayOf(month, year)
+
+
+  def firstDayOf[D: DateOps](month: Month, year: Year): D = implicitly[DateOps[D]].firstDayOf(month, year)
 
   implicit class YearClass(val year: Year) extends AnyVal {
     def -(other: Year): Int = year.getValue - other.getValue
+
+    def -(other: Int): Year = Year.of(year.getValue - other)
+
+    def +(other: Int): Year = Year.of(year.getValue + other)
 
     def >(other: Year): Boolean = year.getValue > other.getValue
 
     def <(other: Year): Boolean = year.getValue < other.getValue
 
     def <=(other: Year): Boolean = ! >(other)
+
     def >=(other: Year): Boolean = ! <(other)
 
     def >(other: Int): Boolean = year.getValue > other
@@ -115,6 +105,7 @@ object DateOps {
     def <(other: Int): Boolean = year.getValue < other
 
     def <=(other: Int): Boolean = ! >(other)
+
     def >=(other: Int): Boolean = ! <(other)
 
     def ===(number: Int): Boolean = year.getValue == number
@@ -122,22 +113,20 @@ object DateOps {
 
   implicit class MonthClass(val month: Month) extends AnyVal {
     def -(other: Month): Int = month.getValue - other.getValue
+
     def >(other: Month): Boolean = month.getValue > other.getValue
 
     def <(other: Month): Boolean = month.getValue < other.getValue
 
     def <=(other: Month): Boolean = ! >(other)
+
     def >=(other: Month): Boolean = ! <(other)
-    
+
   }
 
-  implicit class DateOpsClass[D: DateOps](val date: D)  {
+  implicit class DateOpsClass[D: DateOps](val date: D) {
 
     private def impl = implicitly[DateOps[D]]
-
-    def MAX_VALUE: D = impl.MAX_VALUE(date)
-
-    def MII_VALUE: D = impl.MAX_VALUE(date)
 
     def from(day: Int, month: Month, year: Year): D = impl.from(day, month, year)
 
@@ -161,19 +150,7 @@ object DateOps {
 
     def year: Year = impl.yearOf(date)
 
-    def dailyDifference(other: D): Double= impl.dailyDifference(date, other)
-
-    def <(other: D): Boolean = impl.<(date, other)
-
-    def <=(other: D): Boolean = ! >(other)
-
-    def >(other: D): Boolean = impl.>(date, other)
-
-    def >=(other: D): Boolean = ! <(other)
-
-    def min(other: D): D = impl.min(date, other)
-
-    def max(other: D): D = impl.max(date, other)
+    def dailyDifference(other: D): Double = impl.dailyDifference(date, other)
 
     def +(days: Int): D = impl.+(date, days)
 
@@ -185,19 +162,15 @@ object DateOps {
 
     def to(other: D, timeUnit: TimeUnit): Long = impl.lengthBetween(date, other, timeUnit)
 
-    def nextWeekday(w: DayOfWeek): D = impl.nextWeekday(date, w)
+    // def nextWeekday(w: DayOfWeek): D = impl.nextWeekday(date, w)
+    def endOfMonth: D = impl.lastDayOf(date.month, date.year)
 
-    def nthWeekdaynth(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): D = impl.nthWeekdaynth(nth,dayOfWeek,month,year)
-
-    def firstDayOf(month: Month, year: Year): D = impl.firstDayOf(month, year)
-
-    def lastDayOf(month: Month, year: Year): D = impl.lastDayOf(month, year)
-
-    def isSameYearOf(other: D): Boolean = impl.sameYear(date,other)
+    def isSameYearOf(other: D): Boolean = impl.sameYear(date, other)
 
     def isSameMonthOf(other: D): Boolean = impl.sameMonth(date, other)
 
     import java.time.Month._
+
     def inDecember: Boolean = date.month == DECEMBER
 
     def inJanuary: Boolean = date.month == JANUARY
@@ -236,19 +209,19 @@ object DateOps {
 
     def +:(other: Int): Int = dayOfWeek.getValue + other
 
-    def isMonday: Boolean  = dayOfWeek == MONDAY
+    def isMonday: Boolean = dayOfWeek == MONDAY
 
     def isTuesDay: Boolean = dayOfWeek == TUESDAY
 
-    def isWednesday: Boolean  = dayOfWeek == WEDNESDAY
+    def isWednesday: Boolean = dayOfWeek == WEDNESDAY
 
     def isThursday: Boolean = dayOfWeek == THURSDAY
 
-    def isFriday: Boolean  = dayOfWeek == FRIDAY
+    def isFriday: Boolean = dayOfWeek == FRIDAY
 
     def isSaturday: Boolean = dayOfWeek == SATURDAY
 
-    def isSunday: Boolean  = dayOfWeek == SUNDAY
+    def isSunday: Boolean = dayOfWeek == SUNDAY
 
 
     def asLongWeekDay: String = dayOfWeek match {

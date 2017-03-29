@@ -3,11 +3,11 @@ package org.quantlib.time.implicits
 import java.time._
 import java.time.temporal.ChronoUnit
 
+import cats.Order
 import org.quantlib.time.Period
 import org.quantlib.time.enums.TimeUnit
 import org.quantlib.time.enums.TimeUnit._
 
-import scala.collection.immutable.Range.Inclusive
 import scala.language.implicitConversions
 
 /**
@@ -21,11 +21,13 @@ object Date {
 
   implicit def toLocalDate(date: LocalDateTime): LocalDate = date.toLocalDate
 
-  implicit object LocalDateOrdering extends Ordering[LocalDate] {
-    override def compare(x: LocalDate, y: LocalDate): Int = x.compareTo(y)
-  }
 
-  implicit object LocalDateOps extends DateOps[LocalDate] {
+  implicit object LocalDateOps extends DateOps[LocalDate] with Order[LocalDate]{
+
+    val MAX = LocalDate.of(2199, 12, 31)
+    val MIN = LocalDate.of(1901, 1, 1)
+
+    override def compare(x: LocalDate, y: LocalDate): Int = x.compareTo(y)
 
     def fromNumber(epochDay: Long): LocalDate = LocalDate.ofEpochDay(epochDay)
 
@@ -39,19 +41,6 @@ object Date {
 
     override def HMSN(date: LocalDate): (Int, Int, Int, Int) = ???
 
-    def min(date1: LocalDate, date2: LocalDate): LocalDate = {
-      if (date1.isEqual(date2)) {
-        date1
-      } else if (date1.isBefore(date2)) {
-        date1
-      } else {
-        date2
-      }
-    }
-
-    def max(date1: LocalDate, date2: LocalDate): LocalDate = {
-      if (date1.equals(min(date1, date2))) date2 else date1
-    }
 
     override def from(day: Int, month: Month, year: Year): LocalDate = LocalDate.of(year.getValue, month, day)
 
@@ -110,21 +99,6 @@ object Date {
       }
     }
 
-    //    override def nthWeekday(nth: Int, dayOfWeek: DayOfWeek, month: Int, year: Int): LocalDate = {
-    //      require( nth>0 && nth < 6, "no more than 5 weekdays for given month year")
-    //
-    //      val first = new LocalDate(year, month, 1).getDayOfWeek
-    //      val skip = if (dayOfWeek >= first) nth - 1 else nth
-    //
-    //      new LocalDate(year, month, (1 + dayOfWeek.getValue + skip * 7) - first.getValue )
-    //    }
-
-    // override def isEndOfMonth(date: LocalDate): LocalDate = date.is
-
-    override def MAX_VALUE(date: LocalDate): LocalDate = LocalDate.MAX
-
-    override def MII_VALUE(date: LocalDate): LocalDate = LocalDate.MIN
-
     override def monthOf(date: LocalDate): Month = date.getMonth
 
     override def yearOf(date: LocalDate): Year = Year.of(date.getYear)
@@ -135,39 +109,47 @@ object Date {
 
     override def doy(date: LocalDate): Int = date.getDayOfYear
 
-    override def nextWeekday(date: LocalDate, w: DayOfWeek): LocalDate = ???
+    override def now: LocalDate = LocalDate.now()
 
-    override def firstDayOf(month: Month, year: Year): LocalDate = ???
+    override def firstDayOf(month: Month, year: Year): LocalDate = {
+      LocalDate.of(year.getValue, month, 1)
+    }
 
-    override def lastDayOf(month: Month, year: Year): LocalDate = ???
+    override def lastDayOf(month: Month, year: Year): LocalDate = {
+      LocalDate.of(year.getValue, month, LocalDate.of(year.getValue, month, 1).lengthOfMonth)
+    }
 
     override def sameYear(date1: LocalDate, date2: LocalDate): Boolean = date1.getYear == date2.getYear
 
     override def sameMonth(date1: LocalDate, date2: LocalDate): Boolean = date1.getMonth == date2.getMonth
 
-    override def previousWednesday(date: LocalDate): LocalDate = ???
-
-    override def nextWednesday(date: LocalDate): LocalDate = ???
-
-
-    override def nthWeekdaynth(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): LocalDate = ???
+    override def nthWeekday(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): LocalDate = {
+      require(nth > 0, "zeroth day of week in a given (month, year) is undefined")
+      require(nth < 6, "no more than 5 weekday in a given (month, year)")
+      val first = LocalDate.of(year.getValue, month, 1).getDayOfWeek
+      val skip = nth - (if (dayOfWeek.getValue >= first.getValue) 1 else 0)
+      LocalDate.of(year.getValue, month, (1 + dayOfWeek.getValue + skip * 7) - first.getValue)
+    }
 
     override def lengthBetween(date1: LocalDate, date2: LocalDate, timeUnit: TimeUnit): Long = {
-      timeUnit match {
+      if (date1.isAfter(date2)) lengthBetween(date2, date1, timeUnit)
+      else timeUnit match {
         case Days => ChronoUnit.DAYS.between(date1, date2)
-        case Weeks => ChronoUnit.WEEKS.between(date1,date2)
-        case Months => ChronoUnit.MONTHS.between(date1,date2)
-        case Years => ChronoUnit.YEARS.between(date1,date2)
-        case Hours => ChronoUnit.HOURS.between(date1,date2)
-        case Minutes => ChronoUnit.MINUTES.between(date1,date2)
-        case Seconds => ChronoUnit.SECONDS.between(date1,date2)
-        case Milliseconds => ChronoUnit.MILLIS.between(date1,date2)
-        case Microseconds => ChronoUnit.MICROS.between(date1,date2)
+        case Weeks => ChronoUnit.WEEKS.between(date1, date2)
+        case Months => ChronoUnit.MONTHS.between(date1, date2)
+        case Years => ChronoUnit.YEARS.between(date1, date2)
+        case Hours => ChronoUnit.HOURS.between(date1, date2)
+        case Minutes => ChronoUnit.MINUTES.between(date1, date2)
+        case Seconds => ChronoUnit.SECONDS.between(date1, date2)
+        case Milliseconds => ChronoUnit.MILLIS.between(date1, date2)
+        case Microseconds => ChronoUnit.MICROS.between(date1, date2)
 
       }
     }
 
-    override def dailyDifference(date1: LocalDate, date2: LocalDate): Double =  ChronoUnit.DAYS.between(date1, date2).toDouble
+    override def dailyDifference(date1: LocalDate, date2: LocalDate): Double = ChronoUnit.DAYS.between(date1, date2).toDouble
+
+
   }
 
 }

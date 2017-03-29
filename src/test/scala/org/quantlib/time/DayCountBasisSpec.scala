@@ -2,6 +2,7 @@ package org.quantlib.time
 
 import java.time.{Month, Year}
 
+import org.quantlib.time.calendars.{Brazil, BusinessCalendar}
 import org.quantlib.time.daycounts.ActualActual.Convention._
 import org.quantlib.time.daycounts.Thirty360.Convention
 import org.quantlib.time.daycounts._
@@ -75,20 +76,15 @@ class DayCountBasisSpec extends FlatSpec with Matchers {
   }
 
   "One" should "pass all testing for default policy." in {
+    import org.quantlib.time.implicits.Date._
 
     val periods = List[Period](Period(3, Months), Period(6, Months), Period(1, Years))
     val expectedOutComes = List[Double](1.0, 1.0, 1.0)
-
-    // 1 years should be enough
-    // import org.quantlib.time.implicits.Date._
-    // import org.quantlib.time.implicits.DateTime._
-    implicit val implicitValue = org.quantlib.time.implicits.Date.LocalDateOps
 
     val first = DateOps.from(1, Month.JANUARY, Year.of(2004))
     val last = DateOps.from(31, Month.DECEMBER, Year.of(2004))
     val dayCounter = One()
 
-    //for (Date start = first; start <= last; start++) {
     (0 until first.to(last, Days).toInt) foreach { i =>
       periods zip expectedOutComes foreach { case (p, expected) =>
         val start = first + Period(i, Days)
@@ -101,6 +97,7 @@ class DayCountBasisSpec extends FlatSpec with Matchers {
   }
 
   "Thirty360_BondBasis" should "pass all testing for default policy." in {
+
     import java.time.Month._
     import org.quantlib.time.implicits.Date._
 
@@ -182,86 +179,86 @@ class DayCountBasisSpec extends FlatSpec with Matchers {
     import org.quantlib.time.implicits.Date._
 
     val startDates = List(
-    DateOps.from(20, AUGUST, Year.of(2006)),
-    DateOps.from(20, FEBRUARY, Year.of(2007)),
-    DateOps.from(20, AUGUST, Year.of(2007)),
-    DateOps.from(20, FEBRUARY, Year.of(2008)),
-    DateOps.from(20, AUGUST, Year.of(2008)),
-    DateOps.from(20, FEBRUARY, Year.of(2009)),
+      DateOps.from(20, AUGUST, Year.of(2006)),
+      DateOps.from(20, FEBRUARY, Year.of(2007)),
+      DateOps.from(20, AUGUST, Year.of(2007)),
+      DateOps.from(20, FEBRUARY, Year.of(2008)),
+      DateOps.from(20, AUGUST, Year.of(2008)),
+      DateOps.from(20, FEBRUARY, Year.of(2009)),
 
-    DateOps.from(28, FEBRUARY, Year.of(2006)),
-    DateOps.from(31, AUGUST, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2007)),
-    DateOps.from(31, AUGUST, Year.of(2007)),
-    DateOps.from(29, FEBRUARY, Year.of(2008)),
-    DateOps.from(31, AUGUST, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2009)),
-    DateOps.from(31, AUGUST, Year.of(2009)),
-    DateOps.from(28, FEBRUARY, Year.of(2010)),
-    DateOps.from(31, AUGUST, Year.of(2010)),
-    DateOps.from(28, FEBRUARY, Year.of(2011)),
-    DateOps.from(31, AUGUST, Year.of(2011)),
+      DateOps.from(28, FEBRUARY, Year.of(2006)),
+      DateOps.from(31, AUGUST, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2007)),
+      DateOps.from(31, AUGUST, Year.of(2007)),
+      DateOps.from(29, FEBRUARY, Year.of(2008)),
+      DateOps.from(31, AUGUST, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2009)),
+      DateOps.from(31, AUGUST, Year.of(2009)),
+      DateOps.from(28, FEBRUARY, Year.of(2010)),
+      DateOps.from(31, AUGUST, Year.of(2010)),
+      DateOps.from(28, FEBRUARY, Year.of(2011)),
+      DateOps.from(31, AUGUST, Year.of(2011)),
 
-    DateOps.from(31, JANUARY, Year.of(2006)),
-    DateOps.from(30, JANUARY, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2006)),
-    DateOps.from(14, FEBRUARY, Year.of(2006)),
-    DateOps.from(30, SEPTEMBER, Year.of(2006)),
-    DateOps.from(31, OCTOBER, Year.of(2006)),
-    DateOps.from(31, AUGUST, Year.of(2007)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(26, FEBRUARY, Year.of(2007)),
-    DateOps.from(26, FEBRUARY, Year.of(2007)),
-    DateOps.from(29, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2008))
+      DateOps.from(31, JANUARY, Year.of(2006)),
+      DateOps.from(30, JANUARY, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2006)),
+      DateOps.from(14, FEBRUARY, Year.of(2006)),
+      DateOps.from(30, SEPTEMBER, Year.of(2006)),
+      DateOps.from(31, OCTOBER, Year.of(2006)),
+      DateOps.from(31, AUGUST, Year.of(2007)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(26, FEBRUARY, Year.of(2007)),
+      DateOps.from(26, FEBRUARY, Year.of(2007)),
+      DateOps.from(29, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2008))
     )
     val endDates = List(
-    DateOps.from(20, FEBRUARY, Year.of(2007)),
-    DateOps.from(20, AUGUST, Year.of(2007)),
-    DateOps.from(20, FEBRUARY, Year.of(2008)),
-    DateOps.from(20, AUGUST, Year.of(2008)),
-    DateOps.from(20, FEBRUARY, Year.of(2009)),
-    DateOps.from(20, AUGUST, Year.of(2009)),
+      DateOps.from(20, FEBRUARY, Year.of(2007)),
+      DateOps.from(20, AUGUST, Year.of(2007)),
+      DateOps.from(20, FEBRUARY, Year.of(2008)),
+      DateOps.from(20, AUGUST, Year.of(2008)),
+      DateOps.from(20, FEBRUARY, Year.of(2009)),
+      DateOps.from(20, AUGUST, Year.of(2009)),
 
-    DateOps.from(31, AUGUST, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2007)),
-    DateOps.from(31, AUGUST, Year.of(2007)),
-    DateOps.from(29, FEBRUARY, Year.of(2008)),
-    DateOps.from(31, AUGUST, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2009)),
-    DateOps.from(31, AUGUST, Year.of(2009)),
-    DateOps.from(28, FEBRUARY, Year.of(2010)),
-    DateOps.from(31, AUGUST, Year.of(2010)),
-    DateOps.from(28, FEBRUARY, Year.of(2011)),
-    DateOps.from(31, AUGUST, Year.of(2011)),
-    DateOps.from(29, FEBRUARY, Year.of(2012)),
+      DateOps.from(31, AUGUST, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2007)),
+      DateOps.from(31, AUGUST, Year.of(2007)),
+      DateOps.from(29, FEBRUARY, Year.of(2008)),
+      DateOps.from(31, AUGUST, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2009)),
+      DateOps.from(31, AUGUST, Year.of(2009)),
+      DateOps.from(28, FEBRUARY, Year.of(2010)),
+      DateOps.from(31, AUGUST, Year.of(2010)),
+      DateOps.from(28, FEBRUARY, Year.of(2011)),
+      DateOps.from(31, AUGUST, Year.of(2011)),
+      DateOps.from(29, FEBRUARY, Year.of(2012)),
 
-    DateOps.from(28, FEBRUARY, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2006)),
-    DateOps.from(3,  MARCH, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2006)),
-    DateOps.from(31, OCTOBER, Year.of(2006)),
-    DateOps.from(28, NOVEMBER, Year.of(2006)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, AUGUST, Year.of(2008)),
-    DateOps.from(30, AUGUST, Year.of(2008)),
-    DateOps.from(31, AUGUST, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2008)),
-    DateOps.from(29, FEBRUARY, Year.of(2008)),
-    DateOps.from(28, FEBRUARY, Year.of(2009)),
-    DateOps.from(30, MARCH, Year.of(2008)),
-    DateOps.from(31, MARCH, Year.of(2008))
+      DateOps.from(28, FEBRUARY, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2006)),
+      DateOps.from(3, MARCH, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2006)),
+      DateOps.from(31, OCTOBER, Year.of(2006)),
+      DateOps.from(28, NOVEMBER, Year.of(2006)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, AUGUST, Year.of(2008)),
+      DateOps.from(30, AUGUST, Year.of(2008)),
+      DateOps.from(31, AUGUST, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2008)),
+      DateOps.from(29, FEBRUARY, Year.of(2008)),
+      DateOps.from(28, FEBRUARY, Year.of(2009)),
+      DateOps.from(30, MARCH, Year.of(2008)),
+      DateOps.from(31, MARCH, Year.of(2008))
     )
 
     val expecteds = List(180, 180, 180, 180, 180, 180,
       182, 178, 182, 179, 181, 178,
       182, 178, 182, 178, 182, 179,
-      28,  28,   5,  14,  30,  28,
+      28, 28, 5, 14, 30, 28,
       178, 180, 182, 182, 362, 363,
-      359,  32,  32)
+      359, 32, 32)
     val dayCounter = Thirty360(Convention.EurobondBasis)
     startDates zip endDates zip expecteds foreach { case ((startdate, enddate), expected) =>
       val calculated = dayCounter.dayCount(startdate, enddate)
@@ -296,8 +293,55 @@ class DayCountBasisSpec extends FlatSpec with Matchers {
   }
 
   "Business252" should "pass all testing." in {
-    assert(true)
-    //pending implementaion complete on Calendars
+    import org.quantlib.time.implicits.Date._
+
+    import java.time.Month._
+    val testDates = List(
+      DateOps.from(1, FEBRUARY, Year.of(2002)),
+      DateOps.from(4, FEBRUARY, Year.of(2002)),
+      DateOps.from(16, MAY, Year.of(2003)),
+      DateOps.from(17, DECEMBER, Year.of(2003)),
+      DateOps.from(17, DECEMBER, Year.of(2004)),
+      DateOps.from(19, DECEMBER, Year.of(2005)),
+      DateOps.from(2, JANUARY, Year.of(2006)),
+      DateOps.from(13, MARCH, Year.of(2006)),
+      DateOps.from(15, MAY, Year.of(2006)),
+      DateOps.from(17, MARCH, Year.of(2006)),
+      DateOps.from(15, MAY, Year.of(2006)),
+      DateOps.from(26, JULY, Year.of(2006)),
+      DateOps.from(28, JUNE, Year.of(2007)),
+      DateOps.from(16, SEPTEMBER, Year.of(2009)),
+      DateOps.from(26, JULY, Year.of(2016))
+    )
+    val expecteds = List(
+      0.0039682539683,
+      1.2738095238095,
+      0.6031746031746,
+      0.9960317460317,
+      1.0000000000000,
+      0.0396825396825,
+      0.1904761904762,
+      0.1666666666667,
+      -0.1507936507937,
+      0.1507936507937,
+      0.2023809523810,
+      0.912698412698,
+      2.214285714286,
+      6.84126984127
+    )
+    val tol = 1e-12
+    val dayCounter = Business252(Brazil())
+    val startDates = testDates.init
+    val endDates = testDates.tail
+
+    startDates zip endDates zip expecteds foreach { case ((startdate, enddate), expected) =>
+      val calculated = dayCounter.yearFraction(startdate, enddate)
+
+      assert(Math.abs(calculated - expected) <= tol, s"from $startdate to $enddate \n calculated: $calculated  expected:   $expected")
+    }
+
   }
+
+
 }
 

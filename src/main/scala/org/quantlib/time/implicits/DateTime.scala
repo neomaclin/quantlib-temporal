@@ -3,9 +3,11 @@ package org.quantlib.time.implicits
 import java.time._
 import java.time.temporal.ChronoUnit
 
+import cats.Order
 import org.quantlib.time.Period
 import org.quantlib.time.enums.TimeUnit
 import org.quantlib.time.enums.TimeUnit._
+import org.quantlib.time.implicits.Date.LocalDateOps
 
 import scala.language.implicitConversions
 
@@ -17,48 +19,31 @@ object DateTime {
 
   implicit def toLocalDateTime(date: LocalDate): LocalDateTime = LocalDateTime.of(date, LocalTime.MIDNIGHT)
 
-  implicit object LocalDateOrdering extends Ordering[LocalDateTime]{
+  implicit object LocalDateTimeOps extends DateOps[LocalDateTime] with Order[LocalDateTime]  {
+
     override def compare(x: LocalDateTime, y: LocalDateTime): Int = x.compareTo(y)
-  }
-  implicit object LocalDateTimeOps extends DateOps[LocalDateTime] {
-    override def fromNumber(epochDay: Long): LocalDateTime = LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.MIDNIGHT)
 
-    // def toNumber(date: LocalDateTime): Long = date.toEpochSecond()
-    override def min(date1: LocalDateTime, date2: LocalDateTime): LocalDateTime = {
-      if (date1.isEqual(date2)) {
-        date1
-      } else if (date1.isBefore(date2)) {
-        date1
-      } else {
-        date2
-      }
+    override def fromNumber(epochDay: Long): LocalDateTime = {
+      LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.MIDNIGHT)
     }
 
-    override def max(date1: LocalDateTime, date2: LocalDateTime): LocalDateTime = {
-      if (date1.equals(min(date1, date2))) date2 else date1
+
+    override def YMD(date: LocalDateTime): (Year, Month, Int) = {
+      (Year.of(date.getYear), date.getMonth, date.getDayOfMonth)
     }
 
-    override def YMD(date: LocalDateTime): (Year, Month, Int) = (Year.of(date.getYear), date.getMonth, date.getDayOfMonth)
-
-    override def HMSN(date: LocalDateTime): (Int, Int, Int, Int) = (date.getHour, date.getMinute, date.getSecond, date.getNano)
-
-    override def <(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.isBefore(date2)
-
-    override def >(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.isAfter(date2)
+    override def HMSN(date: LocalDateTime): (Int, Int, Int, Int) = {
+      (date.getHour, date.getMinute, date.getSecond, date.getNano)
+    }
 
     override def from(day: Int, month: Month, year: Year): LocalDateTime = {
-      LocalDateTime.of(LocalDate.of(year.getValue,month,day), LocalTime.MIDNIGHT)
+      LocalDateTime.of(LocalDate.of(year.getValue, month, day), LocalTime.MIDNIGHT)
     }
 
     override def from(day: Int, month: Month, year: Year,
                       hours: Int, minutes: Int, seconds: Int, nanoSeconds: Int = 0): LocalDateTime = {
-      LocalDateTime.of(LocalDate.of(year.getValue,month,day), LocalTime.of(hours,minutes,seconds,nanoSeconds))
+      LocalDateTime.of(LocalDate.of(year.getValue, month, day), LocalTime.of(hours, minutes, seconds, nanoSeconds))
     }
-
-
-    override def MAX_VALUE(date: LocalDateTime): LocalDateTime = LocalDateTime.MAX
-
-    override def MII_VALUE(date: LocalDateTime): LocalDateTime =  LocalDateTime.MIN
 
     override def monthOf(date: LocalDateTime): Month = date.getMonth
 
@@ -89,9 +74,9 @@ object DateTime {
 
         case Seconds => date.plusSeconds(length)
 
-        case Milliseconds => date.plusNanos(length*1000000)
+        case Milliseconds => date.plusNanos(length * 1000000)
 
-        case Microseconds => date.plusNanos(length*1000)
+        case Microseconds => date.plusNanos(length * 1000)
       }
     }
 
@@ -114,46 +99,54 @@ object DateTime {
 
         case Seconds => date.minusSeconds(length)
 
-        case Milliseconds => date.minusNanos(length*1000000)
+        case Milliseconds => date.minusNanos(length * 1000000)
 
-        case Microseconds => date.minusNanos(length*1000)
+        case Microseconds => date.minusNanos(length * 1000)
       }
     }
 
-    override def nextWeekday(date: LocalDateTime, w: DayOfWeek): LocalDateTime = ???
+    override def now: LocalDateTime = LocalDateTime.now()
 
-    override def nthWeekdaynth(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): LocalDateTime = ???
+    override def nthWeekday(nth: Int, dayOfWeek: DayOfWeek, month: Month, year: Year): LocalDateTime = {
+      LocalDateTime.of( LocalDateOps.nthWeekday(nth,dayOfWeek,month,year), LocalTime.MIDNIGHT)
+    }
 
-    override def firstDayOf(month: Month, year: Year): LocalDateTime = ???
+    override def firstDayOf(month: Month, year: Year): LocalDateTime = {
+      LocalDate.of(year.getValue,month,1)
+    }
 
-    override def lastDayOf(month: Month, year: Year): LocalDateTime = ???
+    override def lastDayOf(month: Month, year: Year): LocalDateTime = {
+      LocalDate.of(year.getValue,month,LocalDate.of(year.getValue,month,1).lengthOfMonth)
+    }
 
     override def sameYear(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.getYear == date2.getYear
 
     override def sameMonth(date1: LocalDateTime, date2: LocalDateTime): Boolean = date1.getMonth == date2.getMonth
 
-    override def previousWednesday(date: LocalDateTime): LocalDateTime = ???
-
-    override def nextWednesday(date: LocalDateTime): LocalDateTime = ???
 
     override def lengthBetween(date1: LocalDateTime, date2: LocalDateTime, timeUnit: TimeUnit): Long = {
-      timeUnit match {
+      if (date1.isAfter(date2)) lengthBetween(date2,date1,timeUnit)
+      else timeUnit match {
         case Days => ChronoUnit.DAYS.between(date1, date2)
-        case Weeks => ChronoUnit.WEEKS.between(date1,date2)
-        case Months => ChronoUnit.MONTHS.between(date1,date2)
-        case Years => ChronoUnit.YEARS.between(date1,date2)
-        case Hours => ChronoUnit.HOURS.between(date1,date2)
-        case Minutes => ChronoUnit.MINUTES.between(date1,date2)
-        case Seconds => ChronoUnit.SECONDS.between(date1,date2)
-        case Milliseconds => ChronoUnit.MILLIS.between(date1,date2)
-        case Microseconds => ChronoUnit.MICROS.between(date1,date2)
+        case Weeks => ChronoUnit.WEEKS.between(date1, date2)
+        case Months => ChronoUnit.MONTHS.between(date1, date2)
+        case Years => ChronoUnit.YEARS.between(date1, date2)
+        case Hours => ChronoUnit.HOURS.between(date1, date2)
+        case Minutes => ChronoUnit.MINUTES.between(date1, date2)
+        case Seconds => ChronoUnit.SECONDS.between(date1, date2)
+        case Milliseconds => ChronoUnit.MILLIS.between(date1, date2)
+        case Microseconds => ChronoUnit.MICROS.between(date1, date2)
 
       }
     }
 
     override def dailyDifference(date1: LocalDateTime, date2: LocalDateTime): Double = {
-      ChronoUnit.DAYS.between(date1, date2) + (date2.toLocalTime.toSecondOfDay -date1.toLocalTime.toSecondOfDay)/86400.0
+      ChronoUnit.DAYS.between(date1, date2) +
+        (date2.toLocalTime.toSecondOfDay - date1.toLocalTime.toSecondOfDay) / 86400.0
     }
+
+    val MAX = LocalDateTime.of(LocalDate.of(2199, 12,31),LocalTime.MIDNIGHT)
+    val MIN = LocalDateTime.of(LocalDate.of(1901,1,1),LocalTime.MIDNIGHT)
   }
 
 }

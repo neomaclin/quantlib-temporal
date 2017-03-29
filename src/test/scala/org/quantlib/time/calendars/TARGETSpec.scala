@@ -7,4 +7,9 @@ import org.scalatest._
   */
 class TARGETSpec extends FlatSpec with Matchers {
 
+  "TARGET Celendar" should "pass all test" in {
+    assert(true)
+  }
+
+
 }
