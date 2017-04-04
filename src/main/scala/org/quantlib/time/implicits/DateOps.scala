@@ -22,6 +22,7 @@ trait DateOps[D] extends Order[D]{
 
   def fromNumber(epochDay: Long): D
 
+  def toNumber(date: D): Long
   def YMD(date: D): (Year, Month, Int)
 
   def monthOf(date: D): Month
@@ -62,6 +63,9 @@ trait DateOps[D] extends Order[D]{
 }
 
 object DateOps extends scala.AnyRef with cats.syntax.AllSyntax with cats.instances.AllInstances{
+
+  def fromNumber[D: DateOps](epochDay: Long): D = implicitly[DateOps[D]].fromNumber(epochDay)
+
 
   def from[D: DateOps](day: Int, month: Month, year: Year): D = implicitly[DateOps[D]].from(day, month, year)
 
@@ -112,6 +116,9 @@ object DateOps extends scala.AnyRef with cats.syntax.AllSyntax with cats.instanc
   }
 
   implicit class MonthClass(val month: Month) extends AnyVal {
+    def +(offset: Int): Month = month.plus(offset)
+
+
     def -(other: Month): Int = month.getValue - other.getValue
 
     def >(other: Month): Boolean = month.getValue > other.getValue
@@ -134,7 +141,8 @@ object DateOps extends scala.AnyRef with cats.syntax.AllSyntax with cats.instanc
       impl.from(day, month, year, hours, minutes, seconds, nanoSeconds)
     }
 
-    def fromNumber(epochDay: Long): D = impl.fromNumber(epochDay)
+
+    def toNumber: Long = impl.toNumber(date)
 
     def YMD: (Year, Month, Int) = impl.YMD(date)
 

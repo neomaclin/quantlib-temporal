@@ -21,7 +21,6 @@ object Date {
 
   implicit def toLocalDate(date: LocalDateTime): LocalDate = date.toLocalDate
 
-
   implicit object LocalDateOps extends DateOps[LocalDate] with Order[LocalDate]{
 
     val MAX = LocalDate.of(2199, 12, 31)

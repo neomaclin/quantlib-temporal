@@ -36,6 +36,8 @@ object DateTime {
       (date.getHour, date.getMinute, date.getSecond, date.getNano)
     }
 
+    override def toNumber(date: LocalDateTime): Long = date.toLocalDate.toEpochDay
+
     override def from(day: Int, month: Month, year: Year): LocalDateTime = {
       LocalDateTime.of(LocalDate.of(year.getValue, month, day), LocalTime.MIDNIGHT)
     }
