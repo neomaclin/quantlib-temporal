@@ -64,6 +64,8 @@ object BusinessCalendar {
     def isEndOfMonth(date: D): Boolean = BusinessCalendar.isEndOfMonth(inCalendar, date)
 
     def endOfMonth(date: D): D = BusinessCalendar.endOfMonth(inCalendar,date)
+
+
   }
 
 

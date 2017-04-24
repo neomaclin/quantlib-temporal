@@ -3,27 +3,26 @@ package org.quantlib.time.calendars
 import java.time.Month._
 import java.time.Year
 
-import org.quantlib.time.calendars.China.market
-import org.quantlib.time.calendars.China.market._
+import org.quantlib.time.calendars.China.Market
+import org.quantlib.time.calendars.China.Market._
 import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 
 object China {
 
-  sealed trait market
+  sealed trait Market
 
-  object market {
+  object Market {
 
-    case object SSE extends market
+    case object SSE extends Market
 
-    case object IB extends market
+    case object IB extends Market
 
   }
 
-
 }
 
-final case class China[D: DateOps](market: market = SSE) extends WeekendSatSun[D] with BusinessCalendar[D] {
+final case class China[D: DateOps](market: Market = Market.SSE) extends WeekendSatSun[D] with BusinessCalendar[D] {
 
   private val workingWeekends = List(
     DateOps.from(5, FEBRUARY, Year.of(2005)),
@@ -208,6 +207,9 @@ final case class China[D: DateOps](market: market = SSE) extends WeekendSatSun[D
       (y === 2011 && dd == 2 && m == MAY) ||
       (y === 2012 && ((dd == 30 && m == APRIL) || (dd == 1 && m == MAY))) ||
       (y === 2013 && ((dd >= 29 && m == APRIL) || (dd == 1 && m == MAY))) ||
+      (y === 2014 && dd >= 1 && dd <= 3 && m == MAY) ||
+      (y === 2015 && dd == 1 && m == MAY)||
+      (y === 2016 && dd >= 1 && dd <= 2 && m == MAY)||
       (y === 2017 && dd == 1 && m == MAY)
   }
 

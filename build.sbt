@@ -4,7 +4,7 @@ name := "quantlib-temporal"
 
 version := "1.0"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.11.8"
 
 lazy val catz = Seq("org.typelevel" %% "cats" % "0.9.0")
 lazy val scalaTest = Seq("org.scalatest" %% "scalatest" % "3.0.0" % "test")

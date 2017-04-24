@@ -93,15 +93,35 @@ final case class SouthKorea[D: DateOps](market: Market = KRX) extends WeekendSat
 
   private def isBuddhaBirthDay(date: D) = {
     val (y, m, d) = date.YMD
-    (d == 15 && m == APRIL && y === 2004) || // National Assembly
-      (d == 31 && m == MAY && y === 2006) || // Regional election
-      (d == 19 && m == DECEMBER && y === 2007) || // Presidency
-      (d == 9 && m == APRIL && y === 2008) || // National Assembly
-      (d == 2 && m == JUNE && y === 2010) || // Local election
-      (d == 11 && m == APRIL && y === 2012) || // National Assembly
-      (d == 19 && m == DECEMBER && y === 2012) || // Presidency
-      (d == 4 && m == JUNE && y === 2014) || // Local election
-      (d == 13 && m == APRIL && y === 2016) // National Assembly
+      (d == 26 && m == MAY && y === 2004) ||
+      (d == 15 && m == MAY && y === 2005) ||
+      (d == 5 && m == MAY && y === 2006) ||
+      (d == 24 && m == MAY && y === 2007) ||
+      (d == 12 && m == MAY && y === 2008) ||
+      (d == 2 && m == MAY && y === 2009) ||
+      (d == 21 && m == MAY && y === 2010) ||
+      (d == 10 && m == MAY && y === 2011) ||
+      (d == 28 && m == MAY && y === 2012) ||
+      (d == 17 && m == MAY && y === 2013) ||
+      (d == 6 && m == MAY && y === 2014) ||
+      (d == 25 && m == MAY && y === 2015) ||
+      (d == 14 && m == MAY && y === 2016) ||
+      (d == 3 && m == MAY && y === 2017) ||
+      (d == 22 && m == MAY && y === 2018) ||
+      (d == 12 && m == MAY && y === 2019) ||
+      (d == 30 && m == APRIL && y === 2020) ||
+      (d == 19 && m == MAY && y === 2021) ||
+      (d == 8 && m == MAY && y === 2022) ||
+      (d == 26 && m == MAY && y === 2023) ||
+      (d == 15 && m == MAY && y === 2024) ||
+      (d == 5 && m == MAY && y === 2025) ||
+      (d == 24 && m == MAY && y === 2026) ||
+      (d == 13 && m == MAY && y === 2027) ||
+      (d == 2 && m == MAY && y === 2028) ||
+      (d == 20 && m == MAY && y === 2029) ||
+      (d == 9 && m == MAY && y === 2030) ||
+      (d == 28 && m == MAY && y === 2031) ||
+      (d == 16 && m == MAY && y === 2032)
   }
 
 
