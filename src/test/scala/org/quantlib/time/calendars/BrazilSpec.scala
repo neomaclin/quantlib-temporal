@@ -17,7 +17,6 @@ class BrazilSpec extends FlatSpec with Matchers {
     val brazil = Brazil()
 
     val exptecteds = List(
-
       //DateOps.from(1,JANUARY,Year.of(2005)), // SATURDAY
       DateOps.from(7, FEBRUARY, Year.of(2005)),
       DateOps.from(8, FEBRUARY, Year.of(2005)),

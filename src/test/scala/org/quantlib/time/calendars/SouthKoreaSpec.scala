@@ -1,11 +1,11 @@
 package org.quantlib.time.calendars
 
-import org.scalatest._
-import org.quantlib.time.implicits.Date._
 import java.time.Month._
 import java.time.Year
 
+import org.quantlib.time.implicits.Date._
 import org.quantlib.time.implicits.DateOps
+import org.scalatest._
 
 /**
   * Created by neo on 19/03/2017.

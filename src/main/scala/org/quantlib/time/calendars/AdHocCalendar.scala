@@ -19,8 +19,11 @@ final case class AdHodCalendar[D: DateOps](baseCalendar: Option[BusinessCalendar
 
   override def isWeekend(date: D): Boolean = baseCalendar.exists( _.isWeekend(date) )
 
-  override def considerBusinessDay(date: D): Boolean = baseCalendar.exists {
-    calendar => calendar.considerBusinessDay(date) || !(isWeekend(date) || holidays.contains(date))
+  override def considerHoliday(date: D): Boolean = {
+    holidays.contains(date) || !considerBusinessDay(date)
+  }
+  override def considerBusinessDay(date: D): Boolean = !holidays.contains(date) || baseCalendar.exists {
+    calendar => calendar.considerBusinessDay(date) || !isWeekend(date)
   }
 
   override def addHoliday(date: D): BusinessCalendar[D] with Modification[D] = baseCalendar match {

@@ -4,9 +4,9 @@ import org.quantlib.time.implicits.DateOps
 import org.quantlib.time.implicits.DateOps._
 /** European Central Bank reserve maintenance dates */
 
+object ECB{
 
-final case class ECB() extends StandardFormat {
-  private val knownDates = List(
+  def knownDates[D: DateOps]: List[D] = List(
     38371, 38391, 38420, 38455, 38483, 38511, 38546, 38574, 38602, 38637, 38665, 38692 // 2005
     , 38735, 38756, 38784, 38819, 38847, 38883, 38910, 38938, 38966, 39001, 39029, 39064 // 2006
     , 39099, 39127, 39155, 39190, 39217, 39246, 39274, 39302, 39337, 39365, 39400, 39428 // 2007
@@ -24,12 +24,14 @@ final case class ECB() extends StandardFormat {
     // https://www.ecb.europa.eu/press/pr/date/2015/html/pr150622.en.html
     , 42396, 42445, 42487, 42529, 42578, 42627, 42669, 42718 // 2016
     , 42760, /*source ICAP */ 42802, 42844, 42893, 42942 // 2017
-  )
+  ).map(n => DateOps.fromNumber(n.toLong))
+}
+
+final case class ECB(knownDates:List[_]) extends StandardFormat {
+
   private val num: List[String] = "0123456789".toList.map(_.toString)
   private val codeShort = "hmzuHMZU".toList
   private val codeLong = "fghjkmnquvxzFGHJKMNQUVXZ".toList
-
-  import ECB._
 
   override def confirm[D: DateOps](date: D, mainCycle: Boolean): Boolean = nextDate(date - 1, false).contains(date)
 
@@ -53,9 +55,14 @@ final case class ECB() extends StandardFormat {
     }
   }
 
-  override def addDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = ???
 
-  override def removeDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = ???
+  override def addDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = {
+    new ECB( this.knownDates :+ date)
+  }
+
+  override def removeDate[D: DateOps](date: D, mainCycle: Boolean): StandardFormat = {
+    new ECB( knownDates.filterNot(_ == date))
+  }
 
   override def nextDate[D: DateOps](code: String, mainCycle: Boolean, refDate: D): Option[D] = ???
 

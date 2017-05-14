@@ -15,8 +15,8 @@ final case class TARGET[D: DateOps]() extends WeekendSatSun[D] with BusinessCale
   private val holidays = List[D => Boolean](
     isWeekend,
     isNewYear,
-    Western.isGoodFriday,
-    Western.isEasterMonday,
+    x => Western.isGoodFriday(x) && x.year >= 2000,
+    x => Western.isEasterMonday(x) && x.year >= 2000,
     x => isLabourDay(x) && x.year >= 2000,
     isChristmas,
     x => isBoxingDay(x) && x.year >= 2000,

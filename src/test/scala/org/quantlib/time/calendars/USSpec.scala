@@ -10,6 +10,7 @@ import org.scalatest.{FlatSpec, Matchers}
   * Created by neo on 19/03/2017.
   */
 class USSpec extends FlatSpec with Matchers {
+
   "USSettlement Celendar" should "pass all test" in {
     import org.quantlib.time.implicits.Date._
     val usSettlement = UnitedStates(UnitedStates.Market.Settlement)

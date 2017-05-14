@@ -26,7 +26,6 @@ class ScheduleSpec extends FlatSpec with Matchers {
     }
   }
 
-
   "Schedule Generation" should " be able to generate daily Schedule" in {
     import org.quantlib.time.implicits.Date._
 
@@ -80,7 +79,6 @@ class ScheduleSpec extends FlatSpec with Matchers {
     checkDates(s, expected)
   }
 
-
   "Schedule Generation" should " be able to schedule with end-of-month adjustment" in {
     import org.quantlib.time.implicits.Date._
 
@@ -105,7 +103,6 @@ class ScheduleSpec extends FlatSpec with Matchers {
     checkDates(s, expected)
     assert(!s.isRegular(1),"last period should not be regular")
   }
-
 
   "Schedule Generation" should " be able to remove next-to-last date when it is same as end date ." in {
     import org.quantlib.time.implicits.Date._
@@ -161,7 +158,7 @@ class ScheduleSpec extends FlatSpec with Matchers {
   }
 
   "Schedule Generation" should " be able to unadjust first date is for EOM " +
-    " going backwards when termination date convention is unadjusted..." in {
+                                " going backwards when termination date convention is unadjusted..." in {
     import org.quantlib.time.implicits.Date._
 
     val startDate = DateOps.from(22, AUGUST, Year.of(1996))

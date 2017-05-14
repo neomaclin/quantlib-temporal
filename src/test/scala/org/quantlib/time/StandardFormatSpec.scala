@@ -12,6 +12,10 @@ import org.scalatest._
 class StandardFormatSpec extends FlatSpec with Matchers {
 
   "ecbDates" should "pass all test" in {
+    import org.quantlib.time.implicits.Date._
+
+   // val ecb = ECB()
+   // val knownDates = ecb.knownDates
     assert(true)
   }
 
@@ -114,9 +118,6 @@ class StandardFormatSpec extends FlatSpec with Matchers {
       counter = counter + 1
     }
 
-  }
-  "isoDates" should "pass all test" in {
-    assert(true)
   }
 
 }
